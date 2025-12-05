@@ -52,6 +52,9 @@ payload]]>
 		<!-- AI Chain: Timing Analysis -->
 		<flow-ref doc:name="AI Timing Analysis" doc:id="ai-timing-analysis" name="ai-timing-analysis-flow" />
 
+		<!-- AI Chain: Partner History Analysis -->
+		<flow-ref doc:name="AI Partner History Analysis" doc:id="ai-partner-history-analysis" name="ai-partner-history-analysis-flow" />
+
 		<!-- AI Chain: Final Risk Assessment -->
 		<flow-ref doc:name="AI Final Assessment" doc:id="ai-final-assessment" name="ai-final-assessment-flow" />
 
@@ -250,6 +253,70 @@ payload]]>
 		<logger level="DEBUG" doc:name="Timing Analysis Complete" doc:id="timing-analysis-log" message="AI Timing analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
 	</flow>
 
+	<!-- AI Partner History Analysis Flow -->
+	<flow name="ai-partner-history-analysis-flow" doc:id="ai-partner-history-analysis-flow">
+		<ee:transform doc:name="Load and Prepare Partner History Analysis Prompt" doc:id="prepare-partner-history-prompt">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+var historicalData = readUrl("classpath://${data.partner.history.file}", "application/json")
+var vendorFilteredData = historicalData filter ($.vendorId == vars.originalPO.vendorId)
+var promptTemplate = readUrl("classpath://${prompt.partner.history.analysis.file}", "text/plain")
+var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
+var step2 = (step1 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step3 = (step2 replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
+var step4 = (step3 replace "{{description}}" with (vars.originalPO.description default "")) as String
+var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
+---
+{
+	prompt: processedPrompt,
+	poData: vars.originalPO,
+	historicalDataCount: sizeOf(vendorFilteredData)
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<ms-aichain:chat-answer-prompt doc:name="AI Partner History Analysis" doc:id="partner-history-ai-analysis" config-ref="MuleSoft_AI_Chain_Config">
+			<ms-aichain:prompt>
+				<![CDATA[#[payload.prompt]]]>
+			</ms-aichain:prompt>
+		</ms-aichain:chat-answer-prompt>
+		<ee:transform doc:name="Parse Partner History Analysis" doc:id="parse-partner-history-analysis">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+import * from dw::Runtime
+---
+if (payload.response != null and payload.response != "")
+	try(() -> read(payload.response, "application/json")) orElse {
+		riskScore: 0,
+		indicators: ["AI analysis parsing error"],
+		reasoning: "Could not parse AI response for partner history analysis",
+		confidence: 0
+	}
+else
+	{
+		riskScore: 0,
+		indicators: ["No AI response received"],
+		reasoning: "AI service did not return a response for partner history analysis",
+		confidence: 0
+	}]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="partnerHistoryAnalysis">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<logger level="DEBUG" doc:name="Partner History Analysis Complete" doc:id="partner-history-analysis-log" message="AI Partner History analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+	</flow>
+
 	<!-- AI Final Risk Assessment Flow -->
 	<flow name="ai-final-assessment-flow" doc:id="ai-final-assessment-flow">
 		<ee:transform doc:name="Load and Prepare Final Assessment Prompt" doc:id="prepare-final-prompt">
@@ -264,7 +331,8 @@ var step4 = (step3 replace "{{poDate}}" with (vars.originalPO.poDate default "")
 var step5 = (step4 replace "{{description}}" with (vars.originalPO.description default "")) as String
 var step6 = (step5 replace "{{amountAnalysisResults}}" with (vars.amountAnalysis.response default "")) as String
 var step7 = (step6 replace "{{vendorAnalysisResults}}" with (vars.vendorAnalysis.response default "")) as String
-var processedPrompt = (step7 replace "{{timingAnalysisResults}}" with (vars.timingAnalysis.response default "")) as String
+var step8 = (step7 replace "{{timingAnalysisResults}}" with (vars.timingAnalysis.response default "")) as String
+var processedPrompt = (step8 replace "{{partnerHistoryAnalysisResults}}" with (vars.partnerHistoryAnalysis.response default "")) as String
 
 
 ---

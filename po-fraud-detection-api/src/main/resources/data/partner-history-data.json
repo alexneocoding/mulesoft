@@ -1,0 +1,122 @@
+[
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 999.00,
+        "poDate": "2024-11-20",
+        "description": "iPhone 15, 1 unit"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1399.00,
+        "poDate": "2024-11-21",
+        "description": "MacBook Pro 14-inch, 1 unit"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 799.00,
+        "poDate": "2024-11-22",
+        "description": "iPad Air, 1 unit"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 2198.00,
+        "poDate": "2024-11-23",
+        "description": "iPhone 15 Pro Max, 2 units"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 2799.00,
+        "poDate": "2024-11-24",
+        "description": "MacBook Pro 16-inch, 1 unit"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1598.00,
+        "poDate": "2024-11-25",
+        "description": "iPad Pro 11-inch, 2 units"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1998.00,
+        "poDate": "2024-11-26",
+        "description": "iPhone 15 Pro Max, 2 units"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 2699.00,
+        "poDate": "2024-11-27",
+        "description": "MacBook Pro 14-inch, 2 units"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1599.00,
+        "poDate": "2024-11-28",
+        "description": "iPad Pro 12.9-inch, 1 unit"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 499.00,
+        "poDate": "2024-11-29",
+        "description": "iPhone case bundle, 5 units"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1299.00,
+        "poDate": "2024-12-01",
+        "description": "MacBook Pro 13-inch, 1 unit"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 799.00,
+        "poDate": "2024-12-02",
+        "description": "iPad Air, 1 unit (Blue)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 999.00,
+        "poDate": "2024-12-03",
+        "description": "iPhone 15, 1 unit (Black)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 2799.00,
+        "poDate": "2024-12-04",
+        "description": "MacBook Pro 16-inch, 1 unit (Space Gray)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1598.00,
+        "poDate": "2024-12-05",
+        "description": "iPad Pro 11-inch, 2 units (Silver)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1998.00,
+        "poDate": "2024-12-06",
+        "description": "iPhone 15 Pro Max, 2 units (White Titanium)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 2699.00,
+        "poDate": "2024-12-07",
+        "description": "MacBook Pro 14-inch, 2 units (M3 chip)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1599.00,
+        "poDate": "2024-12-08",
+        "description": "iPad Pro 12.9-inch, 1 unit (Wi‑Fi + Cellular)"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 549.00,
+        "poDate": "2024-12-09",
+        "description": "Apple Pencil + Smart Keyboard, 2 accessories"
+    },
+    {
+        "vendorId": "APL-RSLR-0101",
+        "amount": 1199.00,
+        "poDate": "2024-12-10",
+        "description": "iPhone 15 Plus, 1 unit"
+    }
+]

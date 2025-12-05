@@ -16,6 +16,9 @@ VENDOR ANALYSIS RESULTS:
 TIMING ANALYSIS RESULTS:
 {{timingAnalysisResults}}
 
+PARTNER HISTORY ANALYSIS RESULTS:
+{{partnerHistoryAnalysisResults}}
+
 Please provide a comprehensive final assessment in JSON format with:
 - riskScore: final overall risk score (0-100)
 - riskLevel: 'MINIMAL' (0-19), 'LOW' (20-49), 'MEDIUM' (50-79), or 'HIGH' (80+)
