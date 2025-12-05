@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+  http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+  http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd">
+
+	<!-- Configuration Properties -->
+	<configuration-properties file="config.properties" doc:name="Configuration properties" doc:id="configuration-properties" />
+
+	<!-- HTTP Listener Configuration -->
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="http-listener-config">
+		<http:listener-connection host="${http.host}" port="${http.port}" />
+	</http:listener-config>
+
+	<!-- Global Error Handler -->
+	<ms-aichain:config name="MuleSoft_AI_Chain_Config" doc:name="MuleSoft AI Chain Config" doc:id="af708443-6b44-42bd-8ce0-2a9f4d68082d" llmType="OPENAI" configType="Configuration Json" modelName="gpt-4o-mini" filePath='#[mule.home ++ "/apps/" ++ app.name ++ "/llm-config.json"]' />
+	<error-handler name="global-error-handler" doc:id="global-error-handler">
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="global-on-error-continue">
+			<logger level="ERROR" doc:name="Global Error Logger" doc:id="global-error-logger" message="Global error occurred: #[error.description]" />
+		</on-error-continue>
+	</error-handler>
+
+	<!-- Global Configuration for Validation -->
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="validation-config" />
+
+</mule>

@@ -1,0 +1,34 @@
+You are a financial fraud detection expert. Analyze the following Purchase Order timing information for potential fraud indicators:
+
+PO Date: {{poDate}}
+Current Date: {{currentDate}}
+PO Description: {{description}}
+PO Amount: {{amount}}
+
+Please analyze for:
+1. Future-dated purchase orders (red flag)
+2. Very old purchase orders being processed
+3. Same-day processing patterns
+4. Timing inconsistencies with business processes
+5. Any other timing-related fraud indicators
+
+Provide your analysis in JSON format with:
+- riskScore: number (0-100)
+- indicators: array of strings describing any suspicious patterns found
+- reasoning: detailed explanation of your analysis
+- confidence: your confidence level (0-100) in this assessment
+
+Be thorough but concise in your analysis.
+
+Example output:
+{
+  "riskScore": 35,
+  "indicators": [
+    "Indicator details.",
+    "Indicator details."
+  ],
+  "reasoning": "all reasoning here",
+  "confidence": 75
+}
+
+Return this as a plain text

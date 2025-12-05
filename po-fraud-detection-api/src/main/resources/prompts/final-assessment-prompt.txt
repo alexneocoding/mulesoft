@@ -1,0 +1,42 @@
+You are a senior financial fraud detection expert. Based on the following individual analysis results, provide a comprehensive final fraud risk assessment:
+
+ORIGINAL PURCHASE ORDER:
+- PO Number: {{poNumber}}
+- Vendor ID: {{vendorId}}
+- Amount: {{amount}}
+- Date: {{poDate}}
+- Description: {{description}}
+
+AMOUNT ANALYSIS RESULTS:
+{{amountAnalysisResults}}
+
+VENDOR ANALYSIS RESULTS:
+{{vendorAnalysisResults}}
+
+TIMING ANALYSIS RESULTS:
+{{timingAnalysisResults}}
+
+Please provide a comprehensive final assessment in JSON format with:
+- riskScore: final overall risk score (0-100)
+- riskLevel: 'MINIMAL' (0-19), 'LOW' (20-49), 'MEDIUM' (50-79), or 'HIGH' (80+)
+- fraudIndicators: consolidated array of all significant fraud indicators found
+- recommendation: specific action recommendation ('APPROVE', 'MONITOR', 'REVIEW', or 'REJECT')
+- reasoning: comprehensive explanation combining all analysis results
+- confidence: your overall confidence level (0-100) in this final assessment
+
+Consider the cumulative impact of all findings and provide actionable recommendations.
+
+Example output:
+{
+  "riskScore": 35,
+  "riskLevel": "MEDIUM"
+  "fraudIndicators": [
+    "Indicator details.",
+    "Indicator details."
+  ],
+  "recommendation": "APPROVE",
+  "reasoning": "all reasoning here",
+  "confidence": 75
+}
+
+Return this as a plain text

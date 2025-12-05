@@ -1,0 +1,5 @@
+{
+    "name": "po-fraud-detection-api",
+    "minMuleVersion": "4.9.4",
+    "javaSpecificationVersions": ["1.8"]
+}

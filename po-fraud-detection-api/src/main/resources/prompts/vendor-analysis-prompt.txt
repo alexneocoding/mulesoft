@@ -1,0 +1,32 @@
+You are a financial fraud detection expert. Analyze the following Purchase Order vendor information for potential fraud indicators:
+
+Vendor ID: {{vendorId}}
+PO Description: {{description}}
+PO Amount: ${{amount}}
+
+Please analyze for:
+1. Suspicious vendor ID patterns (too short, test vendors, etc.)
+2. Vendor ID format inconsistencies
+3. Potential shell company indicators
+4. Any other vendor-related fraud indicators
+
+Provide your analysis in JSON format with:
+- riskScore: number (0-100)
+- indicators: array of strings describing any suspicious patterns found
+- reasoning: detailed explanation of your analysis
+- confidence: your confidence level (0-100) in this assessment
+
+Be thorough but concise in your analysis.
+
+Example output:
+{
+  "riskScore": 35,
+  "indicators": [
+    "Indicator details.",
+    "Indicator details."
+  ],
+  "reasoning": "all reasoning here",
+  "confidence": 75
+}
+
+Return this as a plain text

@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+  http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+  http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+  http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd">
+
+	<!-- Main PO Fraud Detection Flow -->
+
+	<!-- PO Data Validation Flow -->
+	<flow name="validate-po-data-flow" doc:id="validate-po-data-flow">
+		<validation:is-not-null doc:name="Validate PO Number" doc:id="validate-po-number" value="#[payload.poNumber]" message="PO Number is required" />
+		<validation:is-not-null doc:name="Validate Vendor ID" doc:id="validate-vendor-id" value="#[payload.vendorId]" message="Vendor ID is required" />
+		<validation:is-not-null doc:name="Validate Amount" doc:id="validate-amount" value="#[payload.amount]" message="Amount is required" />
+		<validation:is-not-null doc:name="Validate Date" doc:id="validate-date" value="#[payload.poDate]" message="PO Date is required" />
+		<validation:is-not-null doc:name="Validate Description" doc:id="validate-description" value="#[payload.description]" message="Description is required" />
+
+		<!-- Validate amount is numeric and positive -->
+		<validation:is-true doc:name="Validate Amount Format" doc:id="validate-amount-format" expression="#[payload.amount is Number and payload.amount > 0]" message="Amount must be a positive number" />
+
+		<logger level="INFO" doc:name="Validation Passed" doc:id="validation-passed" message="PO data validation completed successfully" />
+	</flow>
+
+	<!-- AI-Powered Fraud Analysis Flow -->
+	<flow name="ai-fraud-analysis-flow" doc:id="ai-fraud-analysis-flow">
+		<!-- Store original PO data -->
+		<ee:transform doc:name="Store Original PO" doc:id="store-original-po">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="originalPO">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<!-- AI Chain: Amount Analysis -->
+		<flow-ref doc:name="AI Amount Analysis" doc:id="ai-amount-analysis" name="ai-amount-analysis-flow" />
+
+		<!-- AI Chain: Vendor Analysis -->
+		<flow-ref doc:name="AI Vendor Analysis" doc:id="ai-vendor-analysis" name="ai-vendor-analysis-flow" />
+
+		<!-- AI Chain: Timing Analysis -->
+		<flow-ref doc:name="AI Timing Analysis" doc:id="ai-timing-analysis" name="ai-timing-analysis-flow" />
+
+		<!-- AI Chain: Final Risk Assessment -->
+		<flow-ref doc:name="AI Final Assessment" doc:id="ai-final-assessment" name="ai-final-assessment-flow" />
+
+		<!-- Combine results -->
+		<ee:transform doc:name="Combine AI Results" doc:id="combine-ai-results">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/java
+---
+{
+	originalPO: vars.originalPO,
+	aiAnalysis: payload
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<logger level="INFO" doc:name="AI Analysis Complete" doc:id="ai-analysis-complete" message="AI fraud analysis completed - Risk Level: #[payload.aiAnalysis.riskLevel]" />
+	</flow>
+
+	<!-- AI Amount Analysis Flow -->
+	<flow name="ai-amount-analysis-flow" doc:id="ai-amount-analysis-flow">
+		<ee:transform doc:name="Load and Prepare Amount Analysis Prompt" doc:id="prepare-amount-prompt">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/java
+var promptTemplate = readUrl("classpath://${prompt.amount.analysis.file}", "text/plain")
+var step1 = (promptTemplate replace "{{amount}}" with (payload.amount as String)) as String
+var processedPrompt = (step1 replace "{{description}}" with payload.description default "") as String
+---
+{
+	prompt: processedPrompt,
+	poData: payload
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<ms-aichain:chat-answer-prompt doc:name="AI Amount Analysis" doc:id="6c00f1ea-d5b0-40e2-bb2d-81427e1daa0e" config-ref="MuleSoft_AI_Chain_Config">
+			<ms-aichain:prompt>
+				<![CDATA[#[payload.prompt]]]>
+			</ms-aichain:prompt>
+		</ms-aichain:chat-answer-prompt>
+		<ee:transform doc:name="Parse Amount Analysis" doc:id="parse-amount-analysis">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+import * from dw::Runtime
+---
+if (payload.response != null and payload.response != "")
+	try(() -> read(payload.response, "application/json")) orElse {
+		riskScore: 0,
+		indicators: ["AI analysis parsing error"],
+		reasoning: "Could not parse AI response for amount analysis",
+		confidence: 0
+	}
+else
+	{
+		riskScore: 0,
+		indicators: ["No AI response received"],
+		reasoning: "AI service did not return a response for amount analysis",
+		confidence: 0
+	}]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="amountAnalysis">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<logger level="DEBUG" doc:name="Amount Analysis Complete" doc:id="amount-analysis-log" message="AI Amount analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+	</flow>
+
+	<!-- AI Vendor Analysis Flow -->
+	<flow name="ai-vendor-analysis-flow" doc:id="ai-vendor-analysis-flow">
+		<ee:transform doc:name="Load and Prepare Vendor Analysis Prompt" doc:id="prepare-vendor-prompt">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+var promptTemplate = readUrl("classpath://${prompt.vendor.analysis.file}", "text/plain")
+var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
+var step2 = (step1 replace "{{description}}" with (vars.originalPO.description default "")) as String
+var processedPrompt = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+---
+{
+	prompt: processedPrompt,
+	poData: vars.originalPO
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ms-aichain:chat-answer-prompt doc:name="AI Vendor Analysis" doc:id="bd51d4fc-78f8-45f3-b567-ebecdeaf8848" config-ref="MuleSoft_AI_Chain_Config">
+			<ms-aichain:prompt>
+				<![CDATA[#[payload.prompt]]]>
+			</ms-aichain:prompt>
+		</ms-aichain:chat-answer-prompt>
+		<ee:transform doc:name="Parse Vendor Analysis" doc:id="parse-vendor-analysis">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+import * from dw::Runtime
+---
+if (payload.response != null and payload.response != "")
+	try(() -> read(payload.response, "application/json")) orElse {
+		riskScore: 0,
+		indicators: ["AI analysis parsing error"],
+		reasoning: "Could not parse AI response for vendor analysis",
+		confidence: 0
+	}
+else
+	{
+		riskScore: 0,
+		indicators: ["No AI response received"],
+		reasoning: "AI service did not return a response for vendor analysis",
+		confidence: 0
+	}]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="vendorAnalysis">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<logger level="DEBUG" doc:name="Vendor Analysis Complete" doc:id="vendor-analysis-log" message="AI Vendor analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+	</flow>
+
+	<!-- AI Timing Analysis Flow -->
+	<flow name="ai-timing-analysis-flow" doc:id="ai-timing-analysis-flow">
+		<ee:transform doc:name="Load and Prepare Timing Analysis Prompt" doc:id="prepare-timing-prompt">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+var promptTemplate = readUrl("classpath://${prompt.timing.analysis.file}", "text/plain")
+var step1 = (promptTemplate replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
+var step2 = (step1 replace "{{currentDate}}" with (now() as String)) as String
+var step3 = (step2 replace "{{description}}" with (vars.originalPO.description default "")) as String
+var processedPrompt = (step3 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+---
+{
+	prompt: processedPrompt,
+	poData: vars.originalPO
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<ms-aichain:chat-answer-prompt doc:name="AI Timing Analysis" doc:id="2b1bb730-743a-4151-aaa0-f8f7bd3b81a9" config-ref="MuleSoft_AI_Chain_Config">
+			<ms-aichain:prompt>
+				<![CDATA[#[payload.prompt]]]>
+			</ms-aichain:prompt>
+		</ms-aichain:chat-answer-prompt>
+		<ee:transform doc:name="Parse Timing Analysis" doc:id="parse-timing-analysis">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+import * from dw::Runtime
+---
+if (payload.response != null and payload.response != "")
+	try(() -> read(payload.response, "application/json")) orElse {
+		riskScore: 0,
+		indicators: ["AI analysis parsing error"],
+		reasoning: "Could not parse AI response for timing analysis",
+		confidence: 0
+	}
+else
+	{
+		riskScore: 0,
+		indicators: ["No AI response received"],
+		reasoning: "AI service did not return a response for timing analysis",
+		confidence: 0
+	}]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="timingAnalysis">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<logger level="DEBUG" doc:name="Timing Analysis Complete" doc:id="timing-analysis-log" message="AI Timing analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+	</flow>
+
+	<!-- AI Final Risk Assessment Flow -->
+	<flow name="ai-final-assessment-flow" doc:id="ai-final-assessment-flow">
+		<ee:transform doc:name="Load and Prepare Final Assessment Prompt" doc:id="prepare-final-prompt">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+var promptTemplate = readUrl("classpath://${prompt.final.assessment.file}", "text/plain")
+var step1 = (promptTemplate replace "{{poNumber}}" with (vars.originalPO.poNumber default "")) as String
+var step2 = (step1 replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
+var step3 = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step4 = (step3 replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
+var step5 = (step4 replace "{{description}}" with (vars.originalPO.description default "")) as String
+var step6 = (step5 replace "{{amountAnalysisResults}}" with (vars.amountAnalysis.response default "")) as String
+var step7 = (step6 replace "{{vendorAnalysisResults}}" with (vars.vendorAnalysis.response default "")) as String
+var processedPrompt = (step7 replace "{{timingAnalysisResults}}" with (vars.timingAnalysis.response default "")) as String
+
+
+---
+{
+	prompt: processedPrompt
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<ms-aichain:chat-answer-prompt doc:name="AI Final Assessment" doc:id="81f73fcd-d410-40cd-87a2-cd1b38d2a85e" config-ref="MuleSoft_AI_Chain_Config">
+			<ms-aichain:prompt>
+				<![CDATA[#[payload.prompt]]]>
+			</ms-aichain:prompt>
+		</ms-aichain:chat-answer-prompt>
+		<ee:transform doc:name="Parse Final Assessment" doc:id="parse-final-assessment">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0 output application/java
+import * from dw::Runtime
+---
+if (payload.response != null and payload.response != "")
+	try(() -> read(payload.response, "application/json")) orElse {
+		riskScore: 50,
+		riskLevel: "MEDIUM",
+		fraudIndicators: ["AI analysis parsing error - manual review required"],
+		recommendation: "REVIEW - AI analysis could not be completed",
+		reasoning: "Could not parse AI response for final assessment",
+		confidence: 0
+	}
+else
+	{
+		riskScore: 50,
+		riskLevel: "MEDIUM",
+		fraudIndicators: ["No AI response received - manual review required"],
+		recommendation: "REVIEW - AI service did not return a response",
+		reasoning: "AI service did not return a response for final assessment",
+		confidence: 0
+	}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<logger level="INFO" doc:name="Final Assessment Complete" doc:id="final-assessment-log" message="AI Final assessment - Risk Level: #[payload.riskLevel], Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+	</flow>
+
+</mule>
