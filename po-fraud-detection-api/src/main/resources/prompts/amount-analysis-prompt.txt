@@ -18,7 +18,7 @@ Provide your analysis with:
 Be thorough but concise in your analysis.
 
 Example output:
-{chrome
+{
 
   "riskScore": 35,
   "indicators": [
