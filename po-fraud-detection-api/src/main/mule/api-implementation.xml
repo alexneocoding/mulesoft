@@ -52,9 +52,6 @@ payload]]>
 		<!-- AI Chain: Timing Analysis -->
 		<flow-ref doc:name="AI Timing Analysis" doc:id="ai-timing-analysis" name="ai-timing-analysis-flow" />
 
-		<!-- AI Chain: Partner History Analysis -->
-		<flow-ref doc:name="AI Partner History Analysis" doc:id="ai-partner-history-analysis" name="ai-partner-history-analysis-flow" />
-
 		<!-- AI Chain: Final Risk Assessment -->
 		<flow-ref doc:name="AI Final Assessment" doc:id="ai-final-assessment" name="ai-final-assessment-flow" />
 
@@ -73,23 +70,71 @@ output application/java
 			</ee:message>
 		</ee:transform>
 
+		<logger level="DEBUG" doc:name="Log Combined AI Analysis Results" doc:id="log-combined-results" message="=== COMBINED AI ANALYSIS RESULTS ===&#10;Original PO Data: #[write(payload.originalPO, 'application/json')]&#10;Final AI Analysis: #[write(payload.aiAnalysis, 'application/json')]&#10;Amount Analysis Results: #[write(vars.amountAnalysis, 'application/json')]&#10;Vendor Analysis Results: #[write(vars.vendorAnalysis, 'application/json')]&#10;Timing Analysis Results: #[write(vars.timingAnalysis, 'application/json')]&#10;=== END COMBINED AI ANALYSIS RESULTS ===" />
+
 		<logger level="INFO" doc:name="AI Analysis Complete" doc:id="ai-analysis-complete" message="AI fraud analysis completed - Risk Level: #[payload.aiAnalysis.riskLevel]" />
 	</flow>
 
-	<!-- AI Amount Analysis Flow -->
-	<flow name="ai-amount-analysis-flow" doc:id="ai-amount-analysis-flow">
-		<ee:transform doc:name="Load and Prepare Amount Analysis Prompt" doc:id="prepare-amount-prompt">
+	<!-- Common Historical Data Loading Flow -->
+	<flow name="load-historical-data-flow" doc:id="load-historical-data-flow">
+		<ee:transform doc:name="Load and Filter Historical Data" doc:id="load-filter-historical-data">
 			<ee:message>
 				<ee:set-payload>
 					<![CDATA[%dw 2.0
 output application/java
-var promptTemplate = readUrl("classpath://${prompt.amount.analysis.file}", "text/plain")
-var step1 = (promptTemplate replace "{{amount}}" with (payload.amount as String)) as String
-var processedPrompt = (step1 replace "{{description}}" with payload.description default "") as String
+---
+do {
+	var historicalData = readUrl("classpath://data/partner-history-data.json", "application/json")
+	var vendorFilteredData = historicalData filter ($.vendorId == payload.vendorId)
+	---
+	vendorFilteredData
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Historical Data Loaded" doc:id="historical-data-log" message="Loaded #[sizeOf(payload)] historical records for vendor: #[payload[0].vendorId default 'N/A']" />
+	</flow>
+
+	<!-- AI Amount Analysis Flow -->
+	<flow name="ai-amount-analysis-flow" doc:id="ai-amount-analysis-flow">
+		<!-- Load historical data using common flow -->
+		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-amount">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/java
+---
+{
+	vendorId: payload.vendorId
+}]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="originalAmountPayload">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<flow-ref doc:name="Load Historical Data" doc:id="load-historical-data-amount" name="load-historical-data-flow" />
+
+		<ee:transform doc:name="Prepare Amount Analysis Prompt" doc:id="prepare-amount-prompt">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+var vendorFilteredData = payload
+var promptTemplate = readUrl("classpath://prompts/amount-analysis-prompt.txt", "text/plain")
+var step1 = (promptTemplate replace "{{amount}}" with (vars.originalAmountPayload.amount as String)) as String
+var step2 = (step1 replace "{{description}}" with (vars.originalAmountPayload.description default "")) as String
+var step3 = (step2 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
+var processedPrompt = (step3 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
 ---
 {
 	prompt: processedPrompt,
-	poData: payload
+	poData: vars.originalAmountPayload
 }]]>
 				</ee:set-payload>
 			</ee:message>
@@ -100,6 +145,9 @@ var processedPrompt = (step1 replace "{{description}}" with payload.description 
 				<![CDATA[#[payload.prompt]]]>
 			</ms-aichain:prompt>
 		</ms-aichain:chat-answer-prompt>
+
+		<logger level="DEBUG" doc:name="Log AI Amount Analysis Raw Response" doc:id="log-amount-raw-response" message="=== AMOUNT ANALYSIS - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END AMOUNT ANALYSIS RAW RESPONSE ===" />
+
 		<ee:transform doc:name="Parse Amount Analysis" doc:id="parse-amount-analysis">
 			<ee:message>
 				<ee:set-payload>
@@ -132,19 +180,39 @@ payload]]>
 			</ee:variables>
 		</ee:transform>
 
+		<logger level="DEBUG" doc:name="Log Amount Analysis Parsed Results" doc:id="log-amount-parsed-results" message="=== AMOUNT ANALYSIS - PARSED RESULTS ===&#10;Risk Score: #[payload.riskScore]&#10;Indicators: #[payload.indicators joinBy ', ']&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END AMOUNT ANALYSIS PARSED RESULTS ===" />
+
 		<logger level="DEBUG" doc:name="Amount Analysis Complete" doc:id="amount-analysis-log" message="AI Amount analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
 	</flow>
 
 	<!-- AI Vendor Analysis Flow -->
 	<flow name="ai-vendor-analysis-flow" doc:id="ai-vendor-analysis-flow">
-		<ee:transform doc:name="Load and Prepare Vendor Analysis Prompt" doc:id="prepare-vendor-prompt">
+		<!-- Load historical data using common flow -->
+		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-vendor">
 			<ee:message>
 				<ee:set-payload>
-					<![CDATA[%dw 2.0 output application/java
-var promptTemplate = readUrl("classpath://${prompt.vendor.analysis.file}", "text/plain")
+					<![CDATA[%dw 2.0
+output application/java
+---
+{
+	vendorId: vars.originalPO.vendorId
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<flow-ref doc:name="Load Historical Data" doc:id="load-historical-data-vendor" name="load-historical-data-flow" />
+
+		<ee:transform doc:name="Prepare Vendor Analysis Prompt" doc:id="prepare-vendor-prompt">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0 output application/java
+var vendorFilteredData = payload
+var promptTemplate = readUrl("classpath://prompts/vendor-analysis-prompt.txt", "text/plain")
 var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
 var step2 = (step1 replace "{{description}}" with (vars.originalPO.description default "")) as String
-var processedPrompt = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step3 = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step4 = (step3 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
+var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
 ---
 {
 	prompt: processedPrompt,
@@ -158,6 +226,9 @@ var processedPrompt = (step2 replace "{{amount}}" with (vars.originalPO.amount a
 				<![CDATA[#[payload.prompt]]]>
 			</ms-aichain:prompt>
 		</ms-aichain:chat-answer-prompt>
+
+		<logger level="DEBUG" doc:name="Log AI Vendor Analysis Raw Response" doc:id="log-vendor-raw-response" message="=== VENDOR ANALYSIS - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END VENDOR ANALYSIS RAW RESPONSE ===" />
+
 		<ee:transform doc:name="Parse Vendor Analysis" doc:id="parse-vendor-analysis">
 			<ee:message>
 				<ee:set-payload>
@@ -190,20 +261,39 @@ payload]]>
 			</ee:variables>
 		</ee:transform>
 
+		<logger level="DEBUG" doc:name="Log Vendor Analysis Parsed Results" doc:id="log-vendor-parsed-results" message="=== VENDOR ANALYSIS - PARSED RESULTS ===&#10;Risk Score: #[payload.riskScore]&#10;Indicators: #[payload.indicators joinBy ', ']&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END VENDOR ANALYSIS PARSED RESULTS ===" />
+
 		<logger level="DEBUG" doc:name="Vendor Analysis Complete" doc:id="vendor-analysis-log" message="AI Vendor analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
 	</flow>
 
 	<!-- AI Timing Analysis Flow -->
 	<flow name="ai-timing-analysis-flow" doc:id="ai-timing-analysis-flow">
-		<ee:transform doc:name="Load and Prepare Timing Analysis Prompt" doc:id="prepare-timing-prompt">
+		<!-- Load historical data using common flow -->
+		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-timing">
 			<ee:message>
 				<ee:set-payload>
-					<![CDATA[%dw 2.0 output application/java
-var promptTemplate = readUrl("classpath://${prompt.timing.analysis.file}", "text/plain")
+					<![CDATA[%dw 2.0
+output application/java
+---
+{
+	vendorId: vars.originalPO.vendorId
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+
+		<flow-ref doc:name="Load Historical Data" doc:id="load-historical-data-timing" name="load-historical-data-flow" />
+
+		<ee:transform doc:name="Prepare Timing Analysis Prompt" doc:id="prepare-timing-prompt">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0 output application/java
+var vendorFilteredData = payload
+var promptTemplate = readUrl("classpath://prompts/timing-analysis-prompt.txt", "text/plain")
 var step1 = (promptTemplate replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
-var step2 = (step1 replace "{{currentDate}}" with (now() as String)) as String
+var step2 = (step1 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
 var step3 = (step2 replace "{{description}}" with (vars.originalPO.description default "")) as String
-var processedPrompt = (step3 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step4 = (step3 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
 ---
 {
 	prompt: processedPrompt,
@@ -218,6 +308,9 @@ var processedPrompt = (step3 replace "{{amount}}" with (vars.originalPO.amount a
 				<![CDATA[#[payload.prompt]]]>
 			</ms-aichain:prompt>
 		</ms-aichain:chat-answer-prompt>
+
+		<logger level="DEBUG" doc:name="Log AI Timing Analysis Raw Response" doc:id="log-timing-raw-response" message="=== TIMING ANALYSIS - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END TIMING ANALYSIS RAW RESPONSE ===" />
+
 		<ee:transform doc:name="Parse Timing Analysis" doc:id="parse-timing-analysis">
 			<ee:message>
 				<ee:set-payload>
@@ -250,71 +343,9 @@ payload]]>
 			</ee:variables>
 		</ee:transform>
 
+		<logger level="DEBUG" doc:name="Log Timing Analysis Parsed Results" doc:id="log-timing-parsed-results" message="=== TIMING ANALYSIS - PARSED RESULTS ===&#10;Risk Score: #[payload.riskScore]&#10;Indicators: #[payload.indicators joinBy ', ']&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END TIMING ANALYSIS PARSED RESULTS ===" />
+
 		<logger level="DEBUG" doc:name="Timing Analysis Complete" doc:id="timing-analysis-log" message="AI Timing analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
-	</flow>
-
-	<!-- AI Partner History Analysis Flow -->
-	<flow name="ai-partner-history-analysis-flow" doc:id="ai-partner-history-analysis-flow">
-		<ee:transform doc:name="Load and Prepare Partner History Analysis Prompt" doc:id="prepare-partner-history-prompt">
-			<ee:message>
-				<ee:set-payload>
-					<![CDATA[%dw 2.0 output application/java
-var historicalData = readUrl("classpath://${data.partner.history.file}", "application/json")
-var vendorFilteredData = historicalData filter ($.vendorId == vars.originalPO.vendorId)
-var promptTemplate = readUrl("classpath://${prompt.partner.history.analysis.file}", "text/plain")
-var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
-var step2 = (step1 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
-var step3 = (step2 replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
-var step4 = (step3 replace "{{description}}" with (vars.originalPO.description default "")) as String
-var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
----
-{
-	prompt: processedPrompt,
-	poData: vars.originalPO,
-	historicalDataCount: sizeOf(vendorFilteredData)
-}]]>
-				</ee:set-payload>
-			</ee:message>
-		</ee:transform>
-
-		<ms-aichain:chat-answer-prompt doc:name="AI Partner History Analysis" doc:id="partner-history-ai-analysis" config-ref="MuleSoft_AI_Chain_Config">
-			<ms-aichain:prompt>
-				<![CDATA[#[payload.prompt]]]>
-			</ms-aichain:prompt>
-		</ms-aichain:chat-answer-prompt>
-		<ee:transform doc:name="Parse Partner History Analysis" doc:id="parse-partner-history-analysis">
-			<ee:message>
-				<ee:set-payload>
-					<![CDATA[%dw 2.0 output application/java
-import * from dw::Runtime
----
-if (payload.response != null and payload.response != "")
-	try(() -> read(payload.response, "application/json")) orElse {
-		riskScore: 0,
-		indicators: ["AI analysis parsing error"],
-		reasoning: "Could not parse AI response for partner history analysis",
-		confidence: 0
-	}
-else
-	{
-		riskScore: 0,
-		indicators: ["No AI response received"],
-		reasoning: "AI service did not return a response for partner history analysis",
-		confidence: 0
-	}]]>
-				</ee:set-payload>
-			</ee:message>
-			<ee:variables>
-				<ee:set-variable variableName="partnerHistoryAnalysis">
-					<![CDATA[%dw 2.0
-output application/java
----
-payload]]>
-				</ee:set-variable>
-			</ee:variables>
-		</ee:transform>
-
-		<logger level="DEBUG" doc:name="Partner History Analysis Complete" doc:id="partner-history-analysis-log" message="AI Partner History analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
 	</flow>
 
 	<!-- AI Final Risk Assessment Flow -->
@@ -323,17 +354,16 @@ payload]]>
 			<ee:message>
 				<ee:set-payload>
 					<![CDATA[%dw 2.0 output application/java
-var promptTemplate = readUrl("classpath://${prompt.final.assessment.file}", "text/plain")
+var promptTemplate = readUrl("classpath://prompts/final-assessment-prompt.txt", "text/plain")
 var step1 = (promptTemplate replace "{{poNumber}}" with (vars.originalPO.poNumber default "")) as String
 var step2 = (step1 replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
 var step3 = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
 var step4 = (step3 replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
 var step5 = (step4 replace "{{description}}" with (vars.originalPO.description default "")) as String
-var step6 = (step5 replace "{{amountAnalysisResults}}" with (vars.amountAnalysis.response default "")) as String
-var step7 = (step6 replace "{{vendorAnalysisResults}}" with (vars.vendorAnalysis.response default "")) as String
-var step8 = (step7 replace "{{timingAnalysisResults}}" with (vars.timingAnalysis.response default "")) as String
-var processedPrompt = (step8 replace "{{partnerHistoryAnalysisResults}}" with (vars.partnerHistoryAnalysis.response default "")) as String
-
+var step6 = (step5 replace "{{currentDate}}" with (now() as String)) as String
+var step7 = (step6 replace "{{amountAnalysisResults}}" with (vars.amountAnalysis.response default "")) as String
+var step8 = (step7 replace "{{vendorAnalysisResults}}" with (vars.vendorAnalysis.response default "")) as String
+var processedPrompt = (step8 replace "{{timingAnalysisResults}}" with (vars.timingAnalysis.response default "")) as String
 
 ---
 {
@@ -348,6 +378,9 @@ var processedPrompt = (step8 replace "{{partnerHistoryAnalysisResults}}" with (v
 				<![CDATA[#[payload.prompt]]]>
 			</ms-aichain:prompt>
 		</ms-aichain:chat-answer-prompt>
+
+		<logger level="DEBUG" doc:name="Log AI Final Assessment Raw Response" doc:id="log-final-raw-response" message="=== FINAL ASSESSMENT - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END FINAL ASSESSMENT RAW RESPONSE ===" />
+
 		<ee:transform doc:name="Parse Final Assessment" doc:id="parse-final-assessment">
 			<ee:message>
 				<ee:set-payload>
@@ -375,6 +408,8 @@ else
 				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
+
+		<logger level="DEBUG" doc:name="Log Final Assessment Parsed Results" doc:id="log-final-parsed-results" message="=== FINAL ASSESSMENT - PARSED RESULTS ===&#10;Risk Level: #[payload.riskLevel]&#10;Risk Score: #[payload.riskScore]&#10;Fraud Indicators: #[payload.fraudIndicators joinBy ', ']&#10;Recommendation: #[payload.recommendation]&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END FINAL ASSESSMENT PARSED RESULTS ===" />
 
 		<logger level="INFO" doc:name="Final Assessment Complete" doc:id="final-assessment-log" message="AI Final assessment - Risk Level: #[payload.riskLevel], Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
 	</flow>

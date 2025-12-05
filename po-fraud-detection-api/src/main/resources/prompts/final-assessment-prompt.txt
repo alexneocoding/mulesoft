@@ -1,3 +1,7 @@
+Ignore all previous conversations, messages, or history. 
+Evaluate ONLY the information explicitly provided in THIS prompt. 
+Do not rely on any prior context.
+
 You are a senior financial fraud detection expert. Based on the following individual analysis results, provide a comprehensive final fraud risk assessment:
 
 ORIGINAL PURCHASE ORDER:
@@ -6,6 +10,7 @@ ORIGINAL PURCHASE ORDER:
 - Amount: {{amount}}
 - Date: {{poDate}}
 - Description: {{description}}
+- Current Date: {{currentDate}}
 
 AMOUNT ANALYSIS RESULTS:
 {{amountAnalysisResults}}
@@ -15,9 +20,6 @@ VENDOR ANALYSIS RESULTS:
 
 TIMING ANALYSIS RESULTS:
 {{timingAnalysisResults}}
-
-PARTNER HISTORY ANALYSIS RESULTS:
-{{partnerHistoryAnalysisResults}}
 
 Please provide a comprehensive final assessment in JSON format with:
 - riskScore: final overall risk score (0-100)

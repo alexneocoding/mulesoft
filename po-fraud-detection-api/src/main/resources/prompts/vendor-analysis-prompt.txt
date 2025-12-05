@@ -1,8 +1,21 @@
+Ignore all previous conversations, messages, or history. 
+Evaluate ONLY the information explicitly provided in THIS prompt. 
+Do not rely on any prior context.
+
 You are a financial fraud detection expert. Analyze the following Purchase Order vendor information for potential fraud indicators:
 
 Vendor ID: {{vendorId}}
 PO Description: {{description}}
 PO Amount: ${{amount}}
+Current Date: {{currentDate}}
+
+VENDOR HISTORICAL DATA (for comparison):
+{{historicalData}}
+
+Historical POs are already proven and approved.
+Treat them as trusted baseline data.
+Do NOT analyze historical data for corrections or inconsistencies.
+Use them strictly as reference patterns to evaluate whether the incoming new PO looks legitimate or suspicious.
 
 Please analyze for:
 1. Suspicious vendor ID patterns (too short, test vendors, etc.)
@@ -30,3 +43,5 @@ Example output:
 }
 
 Return this as a plain text
+
+

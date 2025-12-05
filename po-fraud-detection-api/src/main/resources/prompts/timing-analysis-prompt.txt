@@ -1,9 +1,21 @@
+Ignore all previous conversations, messages, or history. 
+Evaluate ONLY the information explicitly provided in THIS prompt. 
+Do not rely on any prior context.
+
 You are a financial fraud detection expert. Analyze the following Purchase Order timing information for potential fraud indicators:
 
-PO Date: {{poDate}}
+Incoming PO Date: {{poDate}}
 Current Date: {{currentDate}}
 PO Description: {{description}}
 PO Amount: {{amount}}
+
+VENDOR HISTORICAL DATA (for comparison, but historical POs are strictly reference patterns; do not use them for past/future determination.):
+{{historicalData}}
+
+Historical POs are already proven and approved.
+Treat them as trusted baseline data.
+Do NOT analyze historical data for corrections or inconsistencies.
+Use them strictly as reference patterns to evaluate whether the incoming new PO looks legitimate or suspicious.
 
 Please analyze for:
 1. Future-dated purchase orders (red flag)
@@ -32,3 +44,15 @@ Example output:
 }
 
 Return this as a plain text
+
+IMPORTANT:
+- Incoming PO Date: {{poDate}}
+- Current Date: {{currentDate}}
+
+DATE GROUNDING RULES:
+- Compare ONLY the Incoming PO Date to the Current Date.
+- Historical POs are strictly reference patterns; do not use them for past/future determination.
+- If Incoming {{poDate}} = {{currentDate}} then same-day
+- If Incoming {{poDate}} < {{currentDate}} then past
+- If Incoming {{poDate}} > {{currentDate}} then future
+
