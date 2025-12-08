@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="load-historical-data-flow" doc:id="d23e06bf-a82b-4afc-ba1d-ea1bec7a5cc3" >
+		<ee:transform doc:name="Load and Filter Historical Data" doc:id="44e3d421-e15d-411e-8391-cf3563638665" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+do {
+	var historicalData = readUrl("classpath://data/partner-history-data.json", "application/json")
+	var vendorFilteredData = historicalData filter ($.vendorId == payload.vendorId)
+	---
+	vendorFilteredData
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Historical Data Loaded" doc:id="7d0f68b3-eadd-49df-9857-930194cbe323" message="Loaded #[sizeOf(payload)] historical records for vendor: #[payload[0].vendorId default 'N/A']" />
+	</flow>
+</mule>

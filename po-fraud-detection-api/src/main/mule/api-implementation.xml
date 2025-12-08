@@ -76,24 +76,6 @@ output application/java
 	</flow>
 
 	<!-- Common Historical Data Loading Flow -->
-	<flow name="load-historical-data-flow" doc:id="load-historical-data-flow">
-		<ee:transform doc:name="Load and Filter Historical Data" doc:id="load-filter-historical-data">
-			<ee:message>
-				<ee:set-payload>
-					<![CDATA[%dw 2.0
-output application/java
----
-do {
-	var historicalData = readUrl("classpath://data/partner-history-data.json", "application/json")
-	var vendorFilteredData = historicalData filter ($.vendorId == payload.vendorId)
-	---
-	vendorFilteredData
-}]]>
-				</ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<logger level="DEBUG" doc:name="Historical Data Loaded" doc:id="historical-data-log" message="Loaded #[sizeOf(payload)] historical records for vendor: #[payload[0].vendorId default 'N/A']" />
-	</flow>
 
 	<!-- AI Amount Analysis Flow -->
 	<flow name="ai-amount-analysis-flow" doc:id="ai-amount-analysis-flow">

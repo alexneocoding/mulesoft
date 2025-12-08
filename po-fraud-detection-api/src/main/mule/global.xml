@@ -14,7 +14,7 @@ http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mu
 	</http:listener-config>
 
 	<!-- Global Error Handler -->
-	<ms-aichain:config name="MuleSoft_AI_Chain_Config" doc:name="MuleSoft AI Chain Config" doc:id="af708443-6b44-42bd-8ce0-2a9f4d68082d" llmType="OPENAI" configType="Configuration Json" modelName="gpt-4o-mini" filePath='#[mule.home ++ "/apps/" ++ app.name ++ "/llm-config.json"]' />
+	<ms-aichain:config name="MuleSoft_AI_Chain_Config" doc:name="MuleSoft AI Chain Config" doc:id="af708443-6b44-42bd-8ce0-2a9f4d68082d" llmType="OPENAI" configType="Configuration Json" modelName="gpt-4o-mini" filePath='#[mule.home ++ "/apps/" ++ app.name ++ "/llm-config.json"]' temperature="0" topP="1" maxTokens="5000"/>
 	<error-handler name="global-error-handler" doc:id="global-error-handler">
 		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="global-on-error-continue">
 			<logger level="ERROR" doc:name="Global Error Logger" doc:id="global-error-logger" message="Global error occurred" />
