@@ -25,7 +25,7 @@ Please provide a comprehensive final assessment in JSON format with:
 - riskScore: final overall risk score (0-100)
 - riskLevel: 'MINIMAL' (0-19), 'LOW' (20-49), 'MEDIUM' (50-79), or 'HIGH' (80+)
 - fraudIndicators: consolidated array of all significant fraud indicators found
-- recommendation: specific action recommendation ('APPROVE', 'MONITOR', 'REVIEW', or 'REJECT')
+- recommendation: specific action recommendation ('APPROVE', 'REVIEW', 'DETAILED_INVESTIGATION', or 'REJECT')
 - reasoning: comprehensive explanation combining all analysis results
 - confidence: your overall confidence level (0-100) in this final assessment
 

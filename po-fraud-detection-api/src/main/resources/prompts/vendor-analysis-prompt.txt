@@ -22,6 +22,7 @@ Please analyze for:
 2. Vendor ID format inconsistencies
 3. Potential shell company indicators
 4. Any other vendor-related fraud indicators
+5. If there are not VENDOR HISTORICAL DATA, this is a RED FLAG. Risk score should be 0.
 
 Provide your analysis in JSON format with:
 - riskScore: number (0-100)

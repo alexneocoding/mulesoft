@@ -18,9 +18,9 @@ Use them strictly as reference patterns to evaluate whether the incoming new PO 
 
 Please analyze for:
 1. Unusually high amounts that might indicate fraud
-2. Round number patterns that could be suspicious
-3. Amount inconsistencies with the description
-4. Any other amount-related fraud indicators
+2. Amount inconsistencies with the description
+3. Any other amount-related fraud indicators.
+4. NOT NOT analyze for round numbers, slightly above or slightly below amount
 
 Provide your analysis with:
 - riskScore: number (0-100)

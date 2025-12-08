@@ -1,5 +1,5 @@
-Ignore all previous conversations, messages, or history. 
-Evaluate ONLY the information explicitly provided in THIS prompt. 
+Ignore all previous conversations, messages, or history.
+Evaluate ONLY the information explicitly provided in THIS prompt.
 Do not rely on any prior context.
 
 You are a financial fraud detection expert. Analyze the following Purchase Order timing information for potential fraud indicators:
@@ -9,7 +9,7 @@ Current Date: {{currentDate}}
 PO Description: {{description}}
 PO Amount: {{amount}}
 
-VENDOR HISTORICAL DATA (for comparison, but historical POs are strictly reference patterns; do not use them for past/future determination.):
+VENDOR HISTORICAL DATA (reference patterns only; do NOT use for time comparisons):
 {{historicalData}}
 
 Historical POs are already proven and approved.
@@ -17,22 +17,53 @@ Treat them as trusted baseline data.
 Do NOT analyze historical data for corrections or inconsistencies.
 Use them strictly as reference patterns to evaluate whether the incoming new PO looks legitimate or suspicious.
 
-Please analyze for:
+------------------------------------------------------------
+TIMING CALCULATION RULES (MANDATORY, SCRIPTED LOGIC)
+------------------------------------------------------------
+
+You MUST calculate timing relationships using the following exact internal script:
+
+# INTERNAL DATE CALCULATION SCRIPT (must be followed)
+
+1. Parse Incoming PO Date (poDate) as a YYYY-MM-DD date object.
+2. Parse Current Date (currentDate) as a YYYY-MM-DD date object.
+3. Compute:
+     isSameDay = (poDate == currentDate)
+     isFuture  = (poDate > currentDate)
+     isPast    = (poDate < currentDate)
+4. Compute:
+     daysDifference = poDate - currentDate in whole days
+     (negative indicates poDate is in the past, positive indicates future)
+
+You MUST use these script results EXACTLY when evaluating:
+- future-dated POs
+- very old past-dated POs
+- same-day processing
+- unusual timing patterns
+- any timing-related anomalies
+
+Do NOT estimate, assume, reinterpret, or infer timing outside this script.
+
+------------------------------------------------------------
+ANALYSIS REQUIREMENTS
+------------------------------------------------------------
+
+Analyze for:
 1. Future-dated purchase orders (red flag)
 2. Very old purchase orders being processed
 3. Same-day processing patterns
 4. Timing inconsistencies with business processes
 5. Any other timing-related fraud indicators
 
-Provide your analysis in JSON format with:
-- riskScore: number (0-100)
-- indicators: array of strings describing any suspicious patterns found
-- reasoning: detailed explanation of your analysis
-- confidence: your confidence level (0-100) in this assessment
+Return results in plain-text JSON with the following fields:
 
-Be thorough but concise in your analysis.
+- riskScore: number (0-100)
+- indicators: array of strings describing suspicious patterns
+- reasoning: detailed explanation of your analysis
+- confidence: number (0-100)
 
 Example output:
+
 {
   "riskScore": 35,
   "indicators": [
@@ -43,16 +74,12 @@ Example output:
   "confidence": 75
 }
 
-Return this as a plain text
+------------------------------------------------------------
+DATE GROUNDING RULES (NON-NEGOTIABLE)
+------------------------------------------------------------
 
-IMPORTANT:
-- Incoming PO Date: {{poDate}}
-- Current Date: {{currentDate}}
-
-DATE GROUNDING RULES:
 - Compare ONLY the Incoming PO Date to the Current Date.
-- Historical POs are strictly reference patterns; do not use them for past/future determination.
-- If Incoming {{poDate}} = {{currentDate}} then same-day
-- If Incoming {{poDate}} < {{currentDate}} then past
-- If Incoming {{poDate}} > {{currentDate}} then future
-
+- Historical POs are strictly reference patterns; do NOT use them for past/future determination.
+- If Incoming {{poDate}} = {{currentDate}} → same-day
+- If Incoming {{poDate}} < {{currentDate}} → past
+- If Incoming {{poDate}} > {{currentDate}} → future
