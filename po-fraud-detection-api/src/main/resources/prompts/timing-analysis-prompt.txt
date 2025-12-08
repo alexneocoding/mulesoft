@@ -38,10 +38,10 @@ You MUST calculate timing relationships using the following exact internal scrip
 You MUST use these script results EXACTLY when evaluating:
 - future-dated POs
 - very old past-dated POs
-- same-day processing
 - unusual timing patterns
 - any timing-related anomalies
-
+- DO NOT evaluate same-day processing
+- DO NOT evaluate the frequency of high-value orders in a short time frame
 Do NOT estimate, assume, reinterpret, or infer timing outside this script.
 
 ------------------------------------------------------------

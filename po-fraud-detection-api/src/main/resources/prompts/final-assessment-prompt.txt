@@ -23,9 +23,13 @@ TIMING ANALYSIS RESULTS:
 
 Please provide a comprehensive final assessment in JSON format with:
 - riskScore: final overall risk score (0-100)
-- riskLevel: 'MINIMAL' (0-19), 'LOW' (20-49), 'MEDIUM' (50-79), or 'HIGH' (80+)
+- riskLevel: 'MINIMAL' (0-20), 'LOW' (21-49), 'MEDIUM' (50-60), or 'HIGH' (61+)
 - fraudIndicators: consolidated array of all significant fraud indicators found
-- recommendation: specific action recommendation ('APPROVE', 'REVIEW', 'DETAILED_INVESTIGATION', or 'REJECT')
+- recommendation: return an specific action recommendation according the riskLevel as:
+  if riskLevel = 'MINIMAL' then recommendation -> 'APPROVE' or
+  if riskLevel = 'LOW' then recommendation -> 'REVIEW' or
+  if riskLevel = 'MEDIUM' then recommendation -> 'DETAILED_INVESTIGATION' or
+  if riskLevel = 'HIGH' then recommendation -> 'REJECT'
 - reasoning: comprehensive explanation combining all analysis results
 - confidence: your overall confidence level (0-100) in this final assessment
 
