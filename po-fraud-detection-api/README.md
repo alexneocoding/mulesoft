@@ -8,6 +8,8 @@ A sophisticated MuleSoft API that leverages AI Chain connector with OpenAI GPT-4
 - [Prerequisites](#prerequisites)
 - [Configuration](#configuration)
 - [API Endpoints](#api-endpoints)
+- [Historical Data Integration](#historical-data-integration)
+- [Application Architecture](#application-architecture)
 - [AI Analysis Process](#ai-analysis-process)
 - [Running the Application](#running-the-application)
 - [Testing the API](#testing-the-api)
@@ -92,12 +94,20 @@ http.port=8081
 1. Replace `YOUR_ACTUAL_OPENAI_API_KEY_HERE` with your actual OpenAI API key
 2. Keep the JSON structure exactly as shown
 3. Ensure the file is saved in `src/main/resources/llm-config.json`
+4. **SECURITY WARNING**: Never commit your actual API key to version control
+
+**File Path Configuration:**
+The AI Chain connector dynamically constructs the config file path as: `{mule.home}/apps/{app.name}/llm-config.json`
 
 ### AI Model Configuration
 The AI Chain connector is configured in `global.xml` with these settings:
 - **Model**: `gpt-4o-mini` (optimized for fraud detection)
 - **LLM Type**: `OPENAI`
 - **Configuration**: JSON file-based configuration
+- **Connector Namespace**: `ms-aichain` (MuleSoft AI Chain Connector)
+- **Max Tokens**: 5000
+- **Temperature**: 0 (deterministic responses)
+- **Top P**: 1
 
 ## API Endpoints
 
@@ -119,7 +129,7 @@ Analyzes a Purchase Order for fraud indicators.
 ```json
 {
   "transactionId": "550e8400-e29b-41d4-a716-446655440000",
-  "timestamp": "2023-12-03T17:15:30.123Z",
+  "timeStamp": "2023-12-03T17:15:30.123Z",
   "poNumber": "PO-2023-001",
   "fraudAssessment": {
     "riskLevel": "MEDIUM",
@@ -137,9 +147,83 @@ Analyzes a Purchase Order for fraud indicators.
 }
 ```
 
+## Historical Data Integration
+
+The API leverages historical partner transaction data to enhance AI analysis accuracy:
+
+### Historical Data Features
+- **Partner History Loading**: Automatically loads historical transaction data for each vendor
+- **Data Filtering**: Filters historical data by vendor ID for contextual analysis
+- **AI Context Enhancement**: Provides historical patterns to AI models for better fraud detection
+- **Data Source**: `src/main/resources/data/partner-history-data.json`
+
+### How Historical Data Works
+1. **Data Loading Flow**: The `load-historical-data-flow` retrieves and filters partner history
+2. **Vendor-Specific Filtering**: Historical data is filtered by the current PO's vendor ID
+3. **AI Integration**: Historical patterns are included in all three AI analysis stages
+4. **Context Enhancement**: AI models use historical data to identify anomalies and patterns
+
+### Historical Data Structure
+The historical data includes:
+- Previous transaction amounts and patterns
+- Vendor transaction history
+- Timing patterns and frequencies
+- Risk indicators from past transactions
+
+This historical context significantly improves the accuracy of fraud detection by allowing AI models to compare current transactions against established vendor patterns.
+
+## Application Architecture
+
+### Flow Architecture Overview
+The application follows a modular flow-based architecture with clear separation of concerns:
+
+```
+HTTP Request → Validation → Historical Data Loading → AI Analysis → Response Formation
+     ↓              ↓              ↓                    ↓              ↓
+  api.xml    api-implementation.xml  common.xml    api-implementation.xml  api.xml
+```
+
+### Core Flow Components
+
+#### 1. Main Flow (`main-flow`)
+- **Location**: `src/main/mule/api.xml`
+- **Purpose**: Entry point for all fraud detection requests
+- **Responsibilities**: HTTP listener, request logging, orchestration, response formatting, error handling
+
+#### 2. Validation Flow (`validate-po-data-flow`)
+- **Location**: `src/main/mule/api-implementation.xml`
+- **Purpose**: Comprehensive input validation
+- **Validations**: Required fields, data types, business rules (positive amounts, valid dates)
+
+#### 3. Historical Data Flow (`load-historical-data-flow`)
+- **Location**: `src/main/mule/common.xml`
+- **Purpose**: Load and filter partner transaction history
+- **Process**: Reads `partner-history-data.json`, filters by vendor ID, provides context for AI analysis
+
+#### 4. AI Analysis Flows
+All located in `src/main/mule/api-implementation.xml`:
+- **Amount Analysis Flow** (`ai-amount-analysis-flow`): Analyzes transaction amounts for fraud patterns
+- **Vendor Analysis Flow** (`ai-vendor-analysis-flow`): Evaluates vendor information for suspicious patterns  
+- **Timing Analysis Flow** (`ai-timing-analysis-flow`): Examines temporal fraud indicators
+- **Final Assessment Flow** (`ai-final-assessment-flow`): Synthesizes all analysis results
+
+### Data Flow Sequence
+1. **Request Reception**: HTTP listener receives POST request
+2. **Input Validation**: All required fields and business rules validated
+3. **Historical Context**: Partner history loaded and filtered by vendor ID
+4. **AI Analysis Chain**: Sequential execution of specialized AI analysis flows
+5. **Result Synthesis**: Final assessment combines all analysis results
+6. **Response Formation**: Structured JSON response with fraud assessment
+
+### Configuration Management
+- **Global Configuration**: `src/main/mule/global.xml` - HTTP listener, AI Chain connector, error handlers
+- **Properties**: `src/main/resources/config.properties` - HTTP host/port configuration
+- **AI Configuration**: `src/main/resources/llm-config.json` - OpenAI API key and settings
+- **Prompts**: `src/main/resources/prompts/` - Specialized AI prompts for each analysis type
+
 ## AI Analysis Process
 
-The API performs a sophisticated 4-stage AI analysis using specialized prompts:
+The API performs a sophisticated 4-stage AI analysis using specialized prompts and historical data:
 
 ### 1. AI Amount Analysis
 - **Prompt Focus**: Analyzes transaction amounts for fraud patterns
@@ -220,24 +304,41 @@ curl -X POST http://localhost:8081/api/fraud-detection/analyze \
 
 ## Postman Collection
 
-This project includes a comprehensive Postman collection for easy testing:
+This project includes an essential Postman test collection for API validation:
 
 ### Files Available
-- `PO-Fraud-Detection-API.postman_collection.json` - Complete test collection
-- `PO-Fraud-Detection-API.postman_environment.json` - Environment configuration
-- `POSTMAN_COLLECTION_README.md` - Detailed setup and usage instructions
+- `integration-tests/postman/api-test-suite.json` - Essential test collection
 
-### Quick Setup
-1. **Import Collection**: Import both JSON files into Postman
-2. **Select Environment**: Choose "PO Fraud Detection API - Local Environment"
-3. **Run Tests**: Execute individual requests or run the entire collection
+### Collection Details
+- **Name**: "PO Fraud Detection API - Essential Test Suite"
+- **Description**: Essential test collection with AI-powered analysis validation
+- **Base URL**: `http://localhost:8081` (configurable via environment variables)
 
 ### Test Cases Included
-- ✅ **Success Case**: Valid PO request with expected fraud assessment
-- ❌ **Failure Case**: Missing required fields with validation error handling
-- 🔍 **Automated Tests**: Response validation, structure checks, and error handling
+- ✅ **Success Case - Partner with History**: Tests vendor with historical data (`APL-RSLR-0101`)
+- ✅ **Success Case - No Historical Data**: Tests vendor without historical data (`APL-RESSELER`)
+- 🔍 **Automated Validation**: Response structure, risk levels, and field validation
 
-For detailed setup instructions, see [POSTMAN_COLLECTION_README.md](POSTMAN_COLLECTION_README.md).
+### Quick Setup
+1. **Import Collection**: Import `integration-tests/postman/api-test-suite.json` into Postman
+2. **Set Base URL**: The collection uses `{{baseUrl}}` variable (defaults to `http://localhost:8081`)
+3. **Run Tests**: Execute individual requests or run the entire collection
+
+### Test Scenarios
+Both test cases use realistic scenarios:
+- **Vendor ID**: Tests both partners with and without historical transaction data
+- **Amount**: $1,998.00 (realistic iPhone purchase amount)
+- **Description**: "iPhone 15, 2 unit" (legitimate business purchase)
+- **Date**: Current date (2025-12-08)
+
+### Automated Test Validations
+Each test case includes comprehensive validations:
+- HTTP 200 status code verification
+- Required response fields validation
+- Risk level validation (HIGH, MEDIUM, LOW, MINIMAL)
+- Risk score range validation (0-100)
+- Status field verification ("ANALYZED")
+- Fraud assessment structure validation
 
 ## Running Tests
 
