@@ -451,18 +451,6 @@ If issues persist:
 
 - **API Key Security**: Never commit your OpenAI API key to version control
 - **Input Validation**: All fields are validated before processing
-- **Secure HTTP Headers**: Security headers are enabled
-- **CORS Configuration**: CORS is properly configured
-- **Request Size Limits**: Payload size is limited for security
-- **Rate Limiting**: Consider implementing rate limiting for production use
-
-## Performance
-
-- **Lightweight Processing**: Efficient fraud detection algorithms
-- **Optimized DataWeave**: Efficient DataWeave transformations
-- **AI Response Caching**: Consider implementing caching for repeated analyses
-- **Configurable Timeouts**: Timeout settings can be adjusted as needed
-- **High Throughput**: Optimized for concurrent request processing
 
 ## Support
 
