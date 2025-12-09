@@ -1,10 +1,6 @@
 # AI-Powered PO Fraud Detection API
 
-<<<<<<< HEAD
-A basic MuleSoft API that leverages AI Chain connector with OpenAI GPT-4 to detect fraudulent patterns in Purchase Orders (POs). This API uses advanced AI prompts to analyze fraud indicators and provides intelligent risk assessments with actionable recommendations.
-=======
 A sophisticated MuleSoft API that leverages MuleSoft Inference connector with OpenAI GPT-4 to detect fraudulent patterns in Purchase Orders (POs). This API uses advanced AI prompts to analyze fraud indicators and provides intelligent risk assessments with actionable recommendations.
->>>>>>> 3506572 (Replace MuleChain AI by Mule Inference + Refactor config API KEY to env variable)
 
 ## Table of Contents
 
@@ -417,16 +413,6 @@ Log levels can be configured in `src/main/resources/log4j2.xml`.
 }
 ```
 
-### Processing Errors (500)
-```json
-{
-  "error": "PROCESSING_ERROR",
-  "message": "An error occurred during fraud analysis",
-  "details": "Internal processing error",
-  "timestamp": "2023-12-03T17:15:30.123Z"
-}
-```
-
 ## Troubleshooting
 
 ### Common Issues
@@ -494,8 +480,6 @@ If issues persist:
 
 ### Application Security
 - **Input Validation**: All fields are validated before processing
-<<<<<<< HEAD
-=======
 - **Secure HTTP Headers**: Security headers are enabled
 - **CORS Configuration**: CORS is properly configured
 - **Request Size Limits**: Payload size is limited for security
