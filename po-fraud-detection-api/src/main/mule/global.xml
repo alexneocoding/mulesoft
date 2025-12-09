@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:ms-inference="http://www.mulesoft.org/schema/mule/ms-inference" xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
   http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
   http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
   http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
-http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd">
+http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd
+http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/mule/ms-inference/current/mule-ms-inference.xsd">
 
 	<!-- Configuration Properties -->
 	<configuration-properties file="config.properties" doc:name="Configuration properties" doc:id="configuration-properties" />
@@ -14,7 +15,9 @@ http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mu
 	</http:listener-config>
 
 	<!-- Global Error Handler -->
-	<ms-aichain:config name="MuleSoft_AI_Chain_Config" doc:name="MuleSoft AI Chain Config" doc:id="af708443-6b44-42bd-8ce0-2a9f4d68082d" llmType="OPENAI" configType="Configuration Json" modelName="gpt-4o-mini" filePath='#[mule.home ++ "/apps/" ++ app.name ++ "/llm-config.json"]' topP="1" maxTokens="5000" temperature="0"/>
+	<ms-inference:text-generation-config name="MuleSoft_Inference_Text_generation_config" doc:name="MuleSoft Inference Text generation config" doc:id="c08f59bd-a467-4f75-9632-5e2b4fca7eca" >
+		<ms-inference:openai-connection apiKey="#[p('llm.openai.api.key')]" temperature="0" topP="1"/>
+	</ms-inference:text-generation-config>
 	<error-handler name="global-error-handler" doc:id="global-error-handler">
 		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="global-on-error-continue">
 			<logger level="ERROR" doc:name="Global Error Logger" doc:id="global-error-logger" message="Global error occurred" />

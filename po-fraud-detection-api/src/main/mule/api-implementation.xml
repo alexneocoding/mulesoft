@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:ms-inference="http://www.mulesoft.org/schema/mule/ms-inference" xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
   http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
   http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
   http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
-http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd">
+http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd
+http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/mule/ms-inference/current/mule-ms-inference.xsd">
 
 	<!-- Main PO Fraud Detection Flow -->
 
@@ -122,12 +123,9 @@ var processedPrompt = (step3 replace "{{historicalData}}" with (write(vendorFilt
 			</ee:message>
 		</ee:transform>
 
-		<ms-aichain:chat-answer-prompt doc:name="AI Amount Analysis" doc:id="6c00f1ea-d5b0-40e2-bb2d-81427e1daa0e" config-ref="MuleSoft_AI_Chain_Config">
-			<ms-aichain:prompt>
-				<![CDATA[#[payload.prompt]]]>
-			</ms-aichain:prompt>
-		</ms-aichain:chat-answer-prompt>
-
+		<ms-inference:chat-answer-prompt doc:name="[Chat] Answer Prompt" doc:id="fe2655bb-0a00-4171-94d9-f98b99af44fe" config-ref="MuleSoft_Inference_Text_generation_config">
+			<ms-inference:prompt ><![CDATA[#[payload.prompt]]]></ms-inference:prompt>
+		</ms-inference:chat-answer-prompt>
 		<logger level="DEBUG" doc:name="Log AI Amount Analysis Raw Response" doc:id="log-amount-raw-response" message="=== AMOUNT ANALYSIS - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END AMOUNT ANALYSIS RAW RESPONSE ===" />
 
 		<ee:transform doc:name="Parse Amount Analysis" doc:id="parse-amount-analysis">
@@ -203,12 +201,10 @@ var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilt
 				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<ms-aichain:chat-answer-prompt doc:name="AI Vendor Analysis" doc:id="bd51d4fc-78f8-45f3-b567-ebecdeaf8848" config-ref="MuleSoft_AI_Chain_Config">
-			<ms-aichain:prompt>
-				<![CDATA[#[payload.prompt]]]>
-			</ms-aichain:prompt>
-		</ms-aichain:chat-answer-prompt>
 
+		<ms-inference:chat-answer-prompt doc:name="[Chat] Answer Prompt" doc:id="c0c81156-b133-4788-9a50-ccb154b261a0" config-ref="MuleSoft_Inference_Text_generation_config">
+			<ms-inference:prompt ><![CDATA[#[payload.prompt]]]></ms-inference:prompt>
+		</ms-inference:chat-answer-prompt>
 		<logger level="DEBUG" doc:name="Log AI Vendor Analysis Raw Response" doc:id="log-vendor-raw-response" message="=== VENDOR ANALYSIS - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END VENDOR ANALYSIS RAW RESPONSE ===" />
 
 		<ee:transform doc:name="Parse Vendor Analysis" doc:id="parse-vendor-analysis">
@@ -285,12 +281,9 @@ var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilt
 			</ee:message>
 		</ee:transform>
 
-		<ms-aichain:chat-answer-prompt doc:name="AI Timing Analysis" doc:id="2b1bb730-743a-4151-aaa0-f8f7bd3b81a9" config-ref="MuleSoft_AI_Chain_Config">
-			<ms-aichain:prompt>
-				<![CDATA[#[payload.prompt]]]>
-			</ms-aichain:prompt>
-		</ms-aichain:chat-answer-prompt>
-
+		<ms-inference:chat-answer-prompt doc:name="[Chat] Answer Prompt" doc:id="9d9aa295-5989-4419-9934-d94f596f219b" config-ref="MuleSoft_Inference_Text_generation_config">
+			<ms-inference:prompt ><![CDATA[#[payload.prompt]]]></ms-inference:prompt>
+		</ms-inference:chat-answer-prompt>
 		<logger level="DEBUG" doc:name="Log AI Timing Analysis Raw Response" doc:id="log-timing-raw-response" message="=== TIMING ANALYSIS - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END TIMING ANALYSIS RAW RESPONSE ===" />
 
 		<ee:transform doc:name="Parse Timing Analysis" doc:id="parse-timing-analysis">
@@ -355,12 +348,9 @@ var processedPrompt = (step8 replace "{{timingAnalysisResults}}" with (vars.timi
 			</ee:message>
 		</ee:transform>
 
-		<ms-aichain:chat-answer-prompt doc:name="AI Final Assessment" doc:id="81f73fcd-d410-40cd-87a2-cd1b38d2a85e" config-ref="MuleSoft_AI_Chain_Config">
-			<ms-aichain:prompt>
-				<![CDATA[#[payload.prompt]]]>
-			</ms-aichain:prompt>
-		</ms-aichain:chat-answer-prompt>
-
+		<ms-inference:chat-answer-prompt doc:name="[Chat] Answer Prompt" doc:id="a923ec6c-e4b3-4503-bc9c-74824307b579" config-ref="MuleSoft_Inference_Text_generation_config">
+			<ms-inference:prompt ><![CDATA[#[payload.prompt]]]></ms-inference:prompt>
+		</ms-inference:chat-answer-prompt>
 		<logger level="DEBUG" doc:name="Log AI Final Assessment Raw Response" doc:id="log-final-raw-response" message="=== FINAL ASSESSMENT - RAW AI RESPONSE ===&#10;Response: #[payload.response default 'No response received']&#10;=== END FINAL ASSESSMENT RAW RESPONSE ===" />
 
 		<ee:transform doc:name="Parse Final Assessment" doc:id="parse-final-assessment">

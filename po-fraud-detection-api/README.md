@@ -1,6 +1,10 @@
 # AI-Powered PO Fraud Detection API
 
+<<<<<<< HEAD
 A basic MuleSoft API that leverages AI Chain connector with OpenAI GPT-4 to detect fraudulent patterns in Purchase Orders (POs). This API uses advanced AI prompts to analyze fraud indicators and provides intelligent risk assessments with actionable recommendations.
+=======
+A sophisticated MuleSoft API that leverages MuleSoft Inference connector with OpenAI GPT-4 to detect fraudulent patterns in Purchase Orders (POs). This API uses advanced AI prompts to analyze fraud indicators and provides intelligent risk assessments with actionable recommendations.
+>>>>>>> 3506572 (Replace MuleChain AI by Mule Inference + Refactor config API KEY to env variable)
 
 ## Table of Contents
 
@@ -50,15 +54,10 @@ Before running this application, ensure you have:
 - MuleSoft Runtime 4.4.0+
 
 ### Required Dependencies
-- **AI Chain Connector**: This project uses the MuleSoft AI Chain connector (version 1.2.0)
-  ```xml
-  <dependency>
-      <groupId>io.github.mulesoft-ai-chain-project</groupId>
-      <artifactId>mule4-aichain-connector</artifactId>
-      <version>1.2.0</version>
-      <classifier>mule-plugin</classifier>
-  </dependency>
-  ```
+- **MuleSoft Inference Connector**: This project uses the MuleSoft Inference connector for AI/ML capabilities
+  - The connector is included as part of the MuleSoft runtime and Exchange
+  - Provides native integration with OpenAI and other AI services
+  - No additional dependency installation required for standard MuleSoft environments
 
 ### OpenAI API Setup
 1. **Create OpenAI Account**: Sign up at [https://platform.openai.com](https://platform.openai.com)
@@ -69,45 +68,49 @@ Before running this application, ensure you have:
 
 ### Essential Configuration Files
 
-#### 1. HTTP Configuration (`src/main/resources/config.properties`)
-Configure the HTTP listener settings:
+#### 1. Application Configuration (`src/main/resources/config.properties`)
+Configure the HTTP listener and OpenAI API key:
 
 ```properties
 # HTTP Listener Configuration
 # Host and port for the HTTP listener
 http.host=0.0.0.0
 http.port=8081
+
+# OpenAI API Configuration
+# Set via environment variable for security
+llm.openai.api.key=${LLM_OPENAI_API_KEY}
 ```
 
-#### 2. AI Configuration (`src/main/resources/llm-config.json`)
-**CRITICAL**: Configure your OpenAI API key in this file:
+#### 2. Environment Variable Setup
+**CRITICAL**: Set your OpenAI API key as an environment variable:
 
-```json
-{
-  "OPENAI": {
-    "OPENAI_API_KEY": "YOUR_ACTUAL_OPENAI_API_KEY_HERE"
-  }
-}
+**For Local Development:**
+```bash
+# macOS/Linux
+export LLM_OPENAI_API_KEY="your-actual-openai-api-key-here"
+
+# Windows
+set LLM_OPENAI_API_KEY=your-actual-openai-api-key-here
 ```
 
-**Important Setup Steps:**
-1. Replace `YOUR_ACTUAL_OPENAI_API_KEY_HERE` with your actual OpenAI API key
-2. Keep the JSON structure exactly as shown
-3. Ensure the file is saved in `src/main/resources/llm-config.json`
-4. **SECURITY WARNING**: Never commit your actual API key to version control
+**For IDE (IntelliJ/Eclipse):**
+- Add `LLM_OPENAI_API_KEY=your-actual-openai-api-key-here` to your run configuration environment variables
 
-**File Path Configuration:**
-The AI Chain connector dynamically constructs the config file path as: `{mule.home}/apps/{app.name}/llm-config.json`
+**Important Setup Notes:**
+1. Replace `your-actual-openai-api-key-here` with your actual OpenAI API key
+2. The environment variable name must be exactly `LLM_OPENAI_API_KEY`
+3. **SECURITY BENEFIT**: API keys are never stored in files or committed to version control
+4. **DEPLOYMENT FRIENDLY**: Easy to configure across different environments
 
 ### AI Model Configuration
-The AI Chain connector is configured in `global.xml` with these settings:
+The MuleSoft Inference connector is configured in `global.xml` with these settings:
 - **Model**: `gpt-4o-mini` (optimized for fraud detection)
-- **LLM Type**: `OPENAI`
-- **Configuration**: JSON file-based configuration
-- **Connector Namespace**: `ms-aichain` (MuleSoft AI Chain Connector)
-- **Max Tokens**: 5000
+- **Connection Type**: `openai-connection`
+- **Configuration**: Environment variable-based API key
+- **Connector Namespace**: `ms-inference` (MuleSoft Inference Connector)
 - **Temperature**: 0 (deterministic responses)
-- **Top P**: 1
+- **Top P**: 1 (full probability distribution)
 
 ## API Endpoints
 
@@ -216,9 +219,9 @@ All located in `src/main/mule/api-implementation.xml`:
 6. **Response Formation**: Structured JSON response with fraud assessment
 
 ### Configuration Management
-- **Global Configuration**: `src/main/mule/global.xml` - HTTP listener, AI Chain connector, error handlers
-- **Properties**: `src/main/resources/config.properties` - HTTP host/port configuration
-- **AI Configuration**: `src/main/resources/llm-config.json` - OpenAI API key and settings
+- **Global Configuration**: `src/main/mule/global.xml` - HTTP listener, MuleSoft Inference connector, error handlers
+- **Properties**: `src/main/resources/config.properties` - HTTP host/port and OpenAI API key configuration
+- **Environment Variables**: `LLM_OPENAI_API_KEY` - Secure OpenAI API key storage
 - **Prompts**: `src/main/resources/prompts/` - Specialized AI prompts for each analysis type
 
 ## AI Analysis Process
@@ -258,9 +261,14 @@ The API performs a sophisticated 4-stage AI analysis using specialized prompts a
    cd po-fraud-detection-api
    ```
 
-2. **Configure OpenAI API Key**
-   - Edit `src/main/resources/llm-config.json`
-   - Replace `YOUR_ACTUAL_OPENAI_API_KEY_HERE` with your OpenAI API key
+2. **Set OpenAI API Key Environment Variable**
+   ```bash
+   # macOS/Linux
+   export LLM_OPENAI_API_KEY="your-actual-openai-api-key-here"
+   
+   # Windows
+   set LLM_OPENAI_API_KEY=your-actual-openai-api-key-here
+   ```
 
 3. **Run the application**
    ```bash
@@ -271,6 +279,7 @@ The API performs a sophisticated 4-stage AI analysis using specialized prompts a
 4. **Verify startup**
    - The API will be available at `http://localhost:8081`
    - Check logs for successful startup messages
+   - Verify the environment variable is loaded correctly
 
 ## Testing the API
 
@@ -358,17 +367,33 @@ The test suite includes:
 ## Deployment
 
 ### CloudHub 2.0 Deployment
-```bash
-mvn clean package deploy -DmuleDeploy
-```
+1. **Set Environment Variable in CloudHub**:
+   - In Anypoint Platform, go to Runtime Manager
+   - Select your application → Settings → Properties
+   - Add: `LLM_OPENAI_API_KEY=your-actual-openai-api-key-here`
+
+2. **Deploy the application**:
+   ```bash
+   mvn clean package deploy -DmuleDeploy
+   ```
 
 ### Runtime Fabric Deployment
-Configure deployment properties and run:
-```bash
-mvn clean package deploy -DmuleDeploy -Denv=production
-```
+1. **Configure Environment Variables**:
+   - Set `LLM_OPENAI_API_KEY` in your Runtime Fabric environment
+   - Use Kubernetes secrets or environment configuration
 
-**Note**: Ensure your OpenAI API key is properly configured in the target environment.
+2. **Deploy with environment configuration**:
+   ```bash
+   mvn clean package deploy -DmuleDeploy -Denv=production
+   ```
+
+### Environment Variable Configuration by Platform
+- **CloudHub**: Set in Runtime Manager → Application Settings → Properties
+- **Runtime Fabric**: Configure via Kubernetes environment variables or secrets
+- **On-Premises**: Set system environment variables on the Mule runtime server
+- **Docker**: Use `-e LLM_OPENAI_API_KEY=your-key` or environment files
+
+**Security Note**: Environment variables provide secure API key management across all deployment platforms without storing sensitive data in application files.
 
 ## Monitoring and Logging
 
@@ -406,12 +431,13 @@ Log levels can be configured in `src/main/resources/log4j2.xml`.
 
 ### Common Issues
 
-#### 1. AI Configuration Problems
-**Problem**: API returns errors about AI service unavailable
+#### 1. Environment Variable Configuration Problems
+**Problem**: API returns errors about AI service unavailable or missing API key
 **Solutions**:
-- Verify OpenAI API key is correctly set in `llm-config.json`
-- Check that the API key has sufficient credits/quota
-- Ensure the JSON format is valid (no extra commas, proper quotes)
+- Verify `LLM_OPENAI_API_KEY` environment variable is set correctly
+- Check that the API key has sufficient credits/quota on OpenAI platform
+- Ensure the environment variable is available to the Mule runtime process
+- For IDE: Verify environment variable is set in run configuration
 
 #### 2. Connection Issues
 **Problem**: Cannot connect to the API
@@ -430,27 +456,66 @@ Log levels can be configured in `src/main/resources/log4j2.xml`.
 #### 4. AI Analysis Failures
 **Problem**: API returns default risk scores instead of AI analysis
 **Solutions**:
-- Check application logs for AI connector errors
+- Check application logs for MuleSoft Inference connector errors
 - Verify OpenAI API key permissions and quota
 - Ensure internet connectivity for OpenAI API calls
+- Confirm environment variable is properly loaded in application startup logs
+
+### Environment Variable Debugging
+1. **Local Development**: 
+   - Run `echo $LLM_OPENAI_API_KEY` (macOS/Linux) or `echo %LLM_OPENAI_API_KEY%` (Windows)
+   - Check IDE environment variable configuration
+2. **CloudHub**: Verify in Runtime Manager → Application Settings → Properties
+3. **Runtime Fabric**: Check Kubernetes environment configuration
+4. **Application Logs**: Look for property resolution errors during startup
 
 ### Debugging Tips
 1. **Check Logs**: Review `logs/` directory for detailed error information
 2. **Test OpenAI Key**: Verify your API key works with OpenAI's API directly
-3. **Validate JSON**: Use a JSON validator to check `llm-config.json` format
+3. **Environment Variables**: Confirm environment variable is set and accessible
 4. **Network Issues**: Ensure outbound HTTPS connections are allowed
+5. **Connector Logs**: Look for MuleSoft Inference connector specific error messages
 
 ### Getting Help
 If issues persist:
 1. Check the application logs for detailed error messages
-2. Verify all configuration files are properly formatted
+2. Verify environment variable configuration is correct
 3. Test with the provided Postman collection to isolate issues
 4. Review the MUnit test cases for usage examples
+5. Confirm MuleSoft Inference connector is properly configured in `global.xml`
 
 ## Security Considerations
 
-- **API Key Security**: Never commit your OpenAI API key to version control
+### Enhanced Security with Environment Variables
+- **Environment Variable Security**: OpenAI API keys are stored as environment variables, never in files
+- **Version Control Safety**: No sensitive data can be accidentally committed to repositories
+- **Deployment Security**: Different API keys can be used across environments (dev, staging, production)
+- **Access Control**: Environment variables provide better access control and audit trails
+
+### Application Security
 - **Input Validation**: All fields are validated before processing
+<<<<<<< HEAD
+=======
+- **Secure HTTP Headers**: Security headers are enabled
+- **CORS Configuration**: CORS is properly configured
+- **Request Size Limits**: Payload size is limited for security
+- **Rate Limiting**: Consider implementing rate limiting for production use
+
+### Best Practices
+- **API Key Rotation**: Regularly rotate OpenAI API keys
+- **Environment Isolation**: Use different API keys for different environments
+- **Monitoring**: Monitor API key usage and set up alerts for unusual activity
+- **Principle of Least Privilege**: Grant minimal necessary permissions to API keys
+- **Secure Storage**: Use secure secret management systems in production (e.g., HashiCorp Vault, AWS Secrets Manager)
+
+## Performance
+
+- **Lightweight Processing**: Efficient fraud detection algorithms
+- **Optimized DataWeave**: Efficient DataWeave transformations
+- **AI Response Caching**: Consider implementing caching for repeated analyses
+- **Configurable Timeouts**: Timeout settings can be adjusted as needed
+- **High Throughput**: Optimized for concurrent request processing
+>>>>>>> 3506572 (Replace MuleChain AI by Mule Inference + Refactor config API KEY to env variable)
 
 ## Support
 
