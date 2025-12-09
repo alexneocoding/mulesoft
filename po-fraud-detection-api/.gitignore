@@ -41,3 +41,4 @@ Thumbs.db
 *.d.ts
 *.js.map 
 .tooling-project
+/bin/
