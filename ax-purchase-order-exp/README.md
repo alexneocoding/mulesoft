@@ -24,8 +24,9 @@ MuleSoft API that processes PDF purchase orders through Intelligent Document Pro
 
 3. Test endpoint:
    ```bash
-   curl -X POST http://localhost:8081/api/v1/order \
-     -F 'file=@purchase-order.pdf'
+   curl --location POST 'http://localhost:8081/api/v1/order' \
+   --header 'Accept: application/json' \
+   --form 'file=@"Invoice-PO-2025-012.pdf"'
    ```
 
 ## API Specification
