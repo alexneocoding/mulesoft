@@ -66,25 +66,11 @@ payload.parts[0].headers."Content-Disposition".filename default "document.pdf"]]
 		<!-- Step 3: Submit PDF to IDP -->
 		<flow-ref doc:name="Submit to IDP" doc:id="submit-to-idp-flow-ref" name="submit-to-idp-subflow" />
 		
-		<!-- Step 4: Wait for Processing -->
-		<flow-ref doc:name="Wait for Processing" doc:id="wait-processing-flow-ref" name="wait-processing-subflow" />
-		
-		<!-- Step 5: Retrieve Results -->
-		<flow-ref doc:name="Retrieve IDP Results" doc:id="retrieve-results-flow-ref" name="retrieve-idp-results-subflow" />
+		<!-- Step 4: Wait for Processing and Retrieve Results -->
+		<flow-ref doc:name="Wait for Processing and Retrieve Results" doc:id="wait-processing-flow-ref" name="wait-processing-subflow" />
 		
 		<logger level="INFO" doc:name="Log Success" doc:id="log-success" 
 			message="Successfully processed purchase order - Correlation ID: #[correlationId]" />
-
-		<!-- Error handling -->
-		<error-handler>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="Validation Error" doc:id="validation-error" 
-				type="VALIDATION:INVALID_BOOLEAN,VALIDATION:INVALID_EMAIL,VALIDATION:INVALID_IP,VALIDATION:INVALID_NUMBER,VALIDATION:INVALID_SIZE,VALIDATION:INVALID_TIME,VALIDATION:INVALID_URL,VALIDATION:NULL,VALIDATION:NOT_NULL,VALIDATION:EMPTY_COLLECTION,VALIDATION:NOT_EMPTY_COLLECTION">
-				<flow-ref doc:name="Handle Error" doc:id="handle-validation-error-flow-ref" name="handle-error-subflow" />
-			</on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="General Error" doc:id="general-error">
-				<flow-ref doc:name="Handle Error" doc:id="handle-general-error-flow-ref" name="handle-error-subflow" />
-			</on-error-propagate>
-		</error-handler>
 	</flow>
 
 </mule>

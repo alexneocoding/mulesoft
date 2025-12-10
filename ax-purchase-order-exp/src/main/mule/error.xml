@@ -1,5 +1,123 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" 
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+
+	<!-- Global Error Handler -->
+	<error-handler name="global-error-handler" doc:id="global-error-handler">
+		
+		<!-- Validation Errors (400 Bad Request) -->
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Validation Error" doc:id="global-validation-error"
+			type="VALIDATION:INVALID_BOOLEAN,VALIDATION:INVALID_EMAIL,VALIDATION:INVALID_IP,VALIDATION:INVALID_NUMBER,VALIDATION:INVALID_SIZE,VALIDATION:INVALID_TIME,VALIDATION:INVALID_URL,VALIDATION:NULL,VALIDATION:NOT_NULL,VALIDATION:EMPTY_COLLECTION,VALIDATION:NOT_EMPTY_COLLECTION">
+			
+			<logger level="ERROR" doc:name="Log Validation Error" doc:id="log-validation-error" 
+				message="Validation Error: #[error.description] - Correlation ID: #[correlationId]" />
+			
+			<ee:transform doc:name="Validation Error Response" doc:id="global-validation-error-response">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: vars.error.description default "Validation error occurred",
+  errorType: "VALIDATION_ERROR",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">400</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		
+		<!-- Authentication/Authorization Errors (401 Unauthorized) -->
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Auth Error" doc:id="global-auth-error"
+			type="HTTP:UNAUTHORIZED,HTTP:FORBIDDEN">
+			
+			<logger level="ERROR" doc:name="Log Auth Error" doc:id="log-auth-error" 
+				message="Authentication/Authorization Error: #[error.description] - Correlation ID: #[correlationId]" />
+			
+			<ee:transform doc:name="Auth Error Response" doc:id="global-auth-error-response">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: "Authentication failed with external service",
+  errorType: "AUTHENTICATION_ERROR",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">401</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		
+		<!-- Connectivity/Timeout Errors (502 Bad Gateway) -->
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Connectivity Error" doc:id="global-connectivity-error"
+			type="HTTP:CONNECTIVITY,HTTP:TIMEOUT">
+			
+			<logger level="ERROR" doc:name="Log Connectivity Error" doc:id="log-connectivity-error" 
+				message="Connectivity/Timeout Error: #[error.description] - Correlation ID: #[correlationId]" />
+			
+			<ee:transform doc:name="Connectivity Error Response" doc:id="global-connectivity-error-response">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: "External service is currently unavailable",
+  errorType: "SERVICE_UNAVAILABLE",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">502</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		
+		<!-- Custom Polling Error (Allow to propagate for polling logic) -->
+		<on-error-propagate enableNotifications="false" logException="false" doc:name="Continue Polling" doc:id="global-continue-polling"
+			type="CUSTOM:CONTINUE_POLLING">
+			
+			<logger level="DEBUG" doc:name="Log Polling Continue" doc:id="log-polling-continue" 
+				message="Polling continues - Status not final yet" />
+		</on-error-propagate>
+		
+		<!-- Generic Errors (500 Internal Server Error) -->
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Generic Error" doc:id="global-generic-error">
+			
+			<logger level="ERROR" doc:name="Log Generic Error" doc:id="log-generic-error" 
+				message="Internal Error: #[error.description] - Error Type: #[error.errorType] - Correlation ID: #[correlationId]" />
+			
+			<ee:transform doc:name="Generic Error Response" doc:id="global-generic-error-response">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: "Internal processing error occurred",
+  errorType: "INTERNAL_ERROR",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">500</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		
+	</error-handler>
+
+</mule>

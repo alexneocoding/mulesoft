@@ -12,6 +12,9 @@
 
 	<!-- Configuration Properties -->
 	<configuration-properties file="application.properties" doc:name="Configuration properties" doc:id="configuration-properties" />
+	
+	<!-- Global Configuration with Default Error Handler -->
+	<configuration defaultErrorHandler-ref="global-error-handler" doc:name="Global Configuration" doc:id="global-configuration" />
 
 	<!-- HTTP Listener Configuration -->
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="http-listener-config">
