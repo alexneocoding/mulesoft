@@ -1,0 +1,112 @@
+#%RAML 1.0
+title: Purchase Order Experience API
+version: v1
+baseUri: http://localhost:8081/api/v1
+
+description: |
+  The ax-purchase-order-exp Experience API receives a PDF file containing a purchase order. 
+  It sends the file to MuleSoft Intelligent Document Processing (IDP), waits a configured 
+  number of seconds, retrieves the extraction result from IDP, and returns the extracted data as JSON.
+
+mediaType: application/json
+
+types:
+  ErrorResponse:
+    type: object
+    properties:
+      error:
+        type: string
+        description: Error message
+        example: "Invalid file format. Only PDF files are allowed."
+      timestamp:
+        type: datetime
+        description: Error timestamp
+        example: "2023-12-09T15:30:00Z"
+      correlationId:
+        type: string
+        description: Correlation ID for tracking
+        example: "abc123-def456-ghi789"
+
+/order:
+  post:
+    displayName: Process Purchase Order PDF
+    description: |
+      Accepts a PDF file containing a purchase order and processes it through 
+      MuleSoft Intelligent Document Processing (IDP) to extract structured data.
+    body:
+      multipart/form-data:
+        properties:
+          file:
+            description: PDF file containing the purchase order
+            required: true
+            type: file
+            fileTypes: ['application/pdf']
+    responses:
+      200:
+        description: Successfully processed the PDF and extracted data
+        body:
+          application/json:
+            description: JSON response from IDP containing extracted purchase order data
+            example: |
+              {
+                "executionId": "12345-67890-abcde",
+                "status": "COMPLETED",
+                "extractedData": {
+                  "purchaseOrderNumber": "PO-2023-001",
+                  "vendor": "ABC Supply Company",
+                  "date": "2023-12-09",
+                  "items": [
+                    {
+                      "description": "Office Supplies",
+                      "quantity": 10,
+                      "unitPrice": 25.50,
+                      "total": 255.00
+                    }
+                  ],
+                  "totalAmount": 255.00
+                }
+              }
+      400:
+        description: Bad Request - Invalid input
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "Missing required file parameter or invalid file format",
+                "timestamp": "2023-12-09T15:30:00Z",
+                "correlationId": "abc123-def456-ghi789"
+              }
+      401:
+        description: Unauthorized - Authentication failed
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "Authentication failed with IDP service",
+                "timestamp": "2023-12-09T15:30:00Z",
+                "correlationId": "abc123-def456-ghi789"
+              }
+      500:
+        description: Internal Server Error
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "Internal processing error occurred",
+                "timestamp": "2023-12-09T15:30:00Z",
+                "correlationId": "abc123-def456-ghi789"
+              }
+      502:
+        description: Bad Gateway - External service error
+        body:
+          application/json:
+            type: ErrorResponse
+            example: |
+              {
+                "error": "IDP service is currently unavailable",
+                "timestamp": "2023-12-09T15:30:00Z",
+                "correlationId": "abc123-def456-ghi789"
+              }

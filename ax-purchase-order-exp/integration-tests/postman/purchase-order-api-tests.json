@@ -1,0 +1,403 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+		"name": "Purchase Order API Tests",
+		"description": "Comprehensive test suite for the Purchase Order Experience API that processes PDF files through MuleSoft IDP. Tests the direct subflow implementation (non-APIKit).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Positive Tests",
+			"item": [
+				{
+					"name": "Valid PDF Upload - Success",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"// Set correlation ID for tracking",
+									"pm.globals.set('correlationId', pm.variables.replaceIn('{{$guid}}'));",
+									"",
+									"// Log test start",
+									"console.log('Starting Valid PDF Upload test with correlation ID: ' + pm.globals.get('correlationId'));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test response status",
+									"pm.test('Status code is 200', function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"// Test response time",
+									"pm.test('Response time is reasonable', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(30000);",
+									"});",
+									"",
+									"// Test content type",
+									"pm.test('Content-Type is application/json', function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+									"});",
+									"",
+									"// Test response structure",
+									"pm.test('Response has valid JSON structure', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.be.an('object');",
+									"});",
+									"",
+									"// Test for IDP response fields (if successful)",
+									"pm.test('Response contains expected IDP fields', function () {",
+									"    const responseJson = pm.response.json();",
+									"    // IDP typically returns executionId and status",
+									"    if (responseJson.executionId) {",
+									"        pm.expect(responseJson.executionId).to.be.a('string');",
+									"    }",
+									"    if (responseJson.status) {",
+									"        pm.expect(responseJson.status).to.be.a('string');",
+									"    }",
+									"});",
+									"",
+									"// Log response for debugging",
+									"console.log('Response:', pm.response.text());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "PDF file containing purchase order data",
+									"type": "file",
+									"src": "sample-purchase-order.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"order"
+							]
+						},
+						"description": "Test successful PDF upload and processing through the entire IDP workflow"
+					}
+				}
+			],
+			"description": "Tests for successful API operations"
+		},
+		{
+			"name": "Validation Tests",
+			"item": [
+				{
+					"name": "Missing File Parameter - 400 Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test response status",
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test content type",
+									"pm.test('Content-Type is application/json', function () {",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+									"});",
+									"",
+									"// Test error response structure",
+									"pm.test('Error response has correct structure', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('error');",
+									"    pm.expect(responseJson).to.have.property('timestamp');",
+									"    pm.expect(responseJson).to.have.property('correlationId');",
+									"});",
+									"",
+									"// Test error message",
+									"pm.test('Error message indicates missing file', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.error).to.include('Missing required file parameter');",
+									"});",
+									"",
+									"console.log('Validation Error Response:', pm.response.text());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"order"
+							]
+						},
+						"description": "Test validation error when no file parameter is provided"
+					}
+				},
+				{
+					"name": "Invalid File Type - 400 Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test response status",
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test error response structure",
+									"pm.test('Error response has correct structure', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('error');",
+									"    pm.expect(responseJson).to.have.property('timestamp');",
+									"    pm.expect(responseJson).to.have.property('correlationId');",
+									"});",
+									"",
+									"// Test error message for invalid file type",
+									"pm.test('Error message indicates invalid file format', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson.error).to.include('Invalid file format');",
+									"});",
+									"",
+									"console.log('File Type Validation Error:', pm.response.text());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "Non-PDF file to test validation",
+									"type": "file",
+									"src": "invalid-file.txt"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"order"
+							]
+						},
+						"description": "Test validation error when non-PDF file is uploaded"
+					}
+				},
+				{
+					"name": "Empty Request Body - 400 Error",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test response status",
+									"pm.test('Status code is 400', function () {",
+									"    pm.response.to.have.status(400);",
+									"});",
+									"",
+									"// Test error response structure",
+									"pm.test('Error response has correct structure', function () {",
+									"    const responseJson = pm.response.json();",
+									"    pm.expect(responseJson).to.have.property('error');",
+									"    pm.expect(responseJson).to.have.property('timestamp');",
+									"});",
+									"",
+									"console.log('Empty Request Error:', pm.response.text());"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"order"
+							]
+						},
+						"description": "Test error handling with completely empty request body"
+					}
+				}
+			],
+			"description": "Tests for input validation and error handling"
+		},
+		{
+			"name": "Error Scenario Tests",
+			"item": [
+				{
+					"name": "Service Health Check",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Test that service is running",
+									"pm.test('Service is accessible', function () {",
+									"    // Accept both success and validation errors as signs service is running",
+									"    pm.expect([200, 400, 401, 500, 502]).to.include(pm.response.code);",
+									"});",
+									"",
+									"// Test response time",
+									"pm.test('Service responds within reasonable time', function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(10000);",
+									"});",
+									"",
+									"console.log('Service Health Status:', pm.response.code, pm.response.status);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"description": "Small test file for health check",
+									"type": "file",
+									"src": "health-check.pdf"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/order",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"order"
+							]
+						},
+						"description": "Basic health check to ensure the service is running and accessible"
+					}
+				}
+			],
+			"description": "Tests for error scenarios and service availability"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"exec": [
+					"// Global pre-request script",
+					"console.log('Executing request to:', pm.request.url.toString());",
+					"console.log('Method:', pm.request.method);",
+					"",
+					"// Set timestamp for correlation",
+					"pm.globals.set('testTimestamp', new Date().toISOString());"
+				],
+				"type": "text/javascript"
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"exec": [
+					"// Global test script",
+					"console.log('Response Status:', pm.response.code, pm.response.status);",
+					"console.log('Response Time:', pm.response.responseTime + 'ms');",
+					"",
+					"// Always test that we get a response",
+					"pm.test('Response received', function () {",
+					"    pm.response.to.not.be.undefined;",
+					"});"
+				],
+				"type": "text/javascript"
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "string"
+		},
+		{
+			"key": "apiVersion",
+			"value": "v1",
+			"type": "string"
+		}
+	]
+}
