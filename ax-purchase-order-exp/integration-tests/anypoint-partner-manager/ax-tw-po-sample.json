@@ -1,0 +1,170 @@
+{
+    "id": "d992d190-584a-444f-bc8c-a19e782a5ce4",
+    "documentName": "purchase-order-00127.pdf",
+    "status": "SUCCEEDED",
+    "pages": [
+        {
+            "page": 1,
+            "fields": {
+                "shipVia": null,
+                "fob": null,
+                "carrier": null,
+                "tax": {
+                    "value": "1748.00"
+                },
+                "purchaseOrderDate": {
+                    "value": "2025-12-15"
+                },
+                "purchaseOrderNumber": {
+                    "value": "PO-2025-00127"
+                },
+                "paymentTerms": {
+                    "value": "Net 30"
+                },
+                "deliveryDate": {
+                    "value": "2025-01-15"
+                },
+                "requiredByDate": null,
+                "subtotal": {
+                    "value": "21580.00"
+                },
+                "total": {
+                    "value": "23598.00"
+                },
+                "amountDue": null,
+                "signatures": null,
+                "emails": null,
+                "parties": {
+                    "vendor": {
+                        "headerAddress": {
+                            "value": "bigcompass\n890 Supplier Blvd\nSan Josem CA\n95112"
+                        },
+                        "headerName": {
+                            "value": "bigcompass"
+                        },
+                        "headerPhone": null,
+                        "headerUrl": null,
+                        "address": {
+                            "value": "bigcompass\n890 Supplier Blvd\nSan Josem CA\n95112"
+                        },
+                        "street": {
+                            "value": "890 Supplier Blvd"
+                        },
+                        "city": {
+                            "value": "San Josem"
+                        },
+                        "state": {
+                            "value": "CA"
+                        },
+                        "zipCode": {
+                            "value": "95112"
+                        },
+                        "country": null,
+                        "name": {
+                            "value": "bigcompass"
+                        },
+                        "addressBlock": {
+                            "value": "890 Supplier Blvd\nSan Josem CA\n95112"
+                        }
+                    },
+                    "buyer": {
+                        "headerAddress": {
+                            "value": "TECHWAVE\n123 Retail Ave\nAustin, TX\n78701"
+                        },
+                        "headerName": {
+                            "value": "TECHWAVE"
+                        },
+                        "headerPhone": null,
+                        "headerUrl": null,
+                        "address": {
+                            "value": "TECHWAVE\n123 Retail Ave\nAustin, TX\n78701"
+                        },
+                        "street": {
+                            "value": "123 Retail Ave"
+                        },
+                        "city": {
+                            "value": "Austin,"
+                        },
+                        "state": {
+                            "value": "TX"
+                        },
+                        "zipCode": {
+                            "value": "78701"
+                        },
+                        "country": null,
+                        "name": {
+                            "value": "TECHWAVE"
+                        },
+                        "addressBlock": {
+                            "value": "123 Retail Ave\nAustin, TX\n78701"
+                        }
+                    }
+                }
+            },
+            "tables": {
+                "table1": [
+                    {
+                        "unitPrice": {
+                            "value": "450.00"
+                        },
+                        "productCode": {
+                            "value": "TV-55-4K"
+                        },
+                        "quantity": {
+                            "value": "20"
+                        },
+                        "price": {
+                            "value": "9000.00"
+                        },
+                        "description": {
+                            "value": "55\" 4K UHD Smart TV"
+                        },
+                        "lineNumber": {
+                            "value": "1"
+                        }
+                    },
+                    {
+                        "unitPrice": {
+                            "value": "1200.00"
+                        },
+                        "productCode": {
+                            "value": "TV-65-OLED"
+                        },
+                        "quantity": {
+                            "value": "10"
+                        },
+                        "price": {
+                            "value": "12000.00"
+                        },
+                        "description": {
+                            "value": "65\" OLED Smart TV"
+                        },
+                        "lineNumber": {
+                            "value": "2"
+                        }
+                    },
+                    {
+                        "unitPrice": {
+                            "value": "850.00"
+                        },
+                        "productCode": {
+                            "value": "SHIP"
+                        },
+                        "quantity": {
+                            "value": "1"
+                        },
+                        "price": {
+                            "value": "850.00"
+                        },
+                        "description": {
+                            "value": "Freight Shipping"
+                        },
+                        "lineNumber": {
+                            "value": "3"
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+}

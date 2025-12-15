@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/purchase-order.schema.json",
+  "type": "object",
+  "required": ["id", "documentName", "status", "pages"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "documentName": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["page", "fields", "tables"],
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "fields": {
+            "type": "object",
+            "properties": {
+              "shipVia": { "type": ["object", "null"] },
+              "fob": { "type": ["object", "null"] },
+              "carrier": { "type": ["object", "null"] },
+              "tax": { "$ref": "#/$defs/valueObject" },
+              "purchaseOrderDate": { "$ref": "#/$defs/valueObject" },
+              "purchaseOrderNumber": { "$ref": "#/$defs/valueObject" },
+              "paymentTerms": { "$ref": "#/$defs/valueObject" },
+              "deliveryDate": { "$ref": "#/$defs/valueObject" },
+              "requiredByDate": { "type": ["object", "null"] },
+              "subtotal": { "$ref": "#/$defs/valueObject" },
+              "total": { "$ref": "#/$defs/valueObject" },
+              "amountDue": { "type": ["object", "null"] },
+              "signatures": { "type": ["object", "null"] },
+              "emails": { "type": ["object", "null"] },
+              "parties": {
+                "type": "object",
+                "required": ["vendor", "buyer"],
+                "properties": {
+                  "vendor": { "$ref": "#/$defs/party" },
+                  "buyer": { "$ref": "#/$defs/party" }
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          "tables": {
+            "type": "object",
+            "properties": {
+              "table1": {
+                "type": "array",
+                "items": { "$ref": "#/$defs/lineItem" }
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "valueObject": {
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "party": {
+      "type": "object",
+      "properties": {
+        "headerAddress": { "$ref": "#/$defs/valueObject" },
+        "headerName": { "$ref": "#/$defs/valueObject" },
+        "headerPhone": { "type": ["object", "null"] },
+        "headerUrl": { "type": ["object", "null"] },
+        "address": { "$ref": "#/$defs/valueObject" },
+        "street": { "$ref": "#/$defs/valueObject" },
+        "city": { "$ref": "#/$defs/valueObject" },
+        "state": { "$ref": "#/$defs/valueObject" },
+        "zipCode": { "$ref": "#/$defs/valueObject" },
+        "country": { "type": ["object", "null"] },
+        "name": { "$ref": "#/$defs/valueObject" },
+        "addressBlock": { "$ref": "#/$defs/valueObject" }
+      },
+      "additionalProperties": false
+    },
+    "lineItem": {
+      "type": "object",
+      "properties": {
+        "unitPrice": { "$ref": "#/$defs/valueObject" },
+        "productCode": { "$ref": "#/$defs/valueObject" },
+        "quantity": { "$ref": "#/$defs/valueObject" },
+        "price": { "$ref": "#/$defs/valueObject" },
+        "description": { "$ref": "#/$defs/valueObject" },
+        "lineNumber": { "$ref": "#/$defs/valueObject" }
+      },
+      "additionalProperties": false
+    }
+  }
+}

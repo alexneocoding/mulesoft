@@ -1,0 +1,74 @@
+{
+  "senderId": {
+    "value": "TECHWAVE"
+  },
+  "receiverId": {
+    "value": "bigcompass"
+  },
+  "transaction": {
+    "transactionType": "JSON-tw-po-schema",
+    "payload": {
+      "DocumentId": "d992d190-584a-444f-bc8c-a19e782a5ce4",
+      "DocumentName": "purchase-order-00127.pdf",
+      "Status": "SUCCEEDED",
+      "Vendor": {
+        "Name": "bigcompass",
+        "Address": {
+          "line1": "890 Supplier Blvd",
+          "city": "San Josem",
+          "state": "CA",
+          "zipCode": "95112",
+          "country": "US"
+        }
+      },
+      "Buyer": {
+        "Name": "TECHWAVE",
+        "BuyerPhone": null,
+        "Address": {
+          "line1": "123 Retail Ave",
+          "city": "Austin,",
+          "state": "TX",
+          "zipCode": "78701",
+          "country": "US"
+        }
+      },
+      "PurchaseOrderNumber": "PO-2025-00127",
+      "PurchaseOrderDate": "2025-12-15",
+      "Subtotal": 21580,
+      "Tax": 1748,
+      "Total": 23598,
+      "AmountDue": 23598,
+      "ShipToName": "TECHWAVE",
+      "ShipToAddress": {
+        "line1": "123 Retail Ave",
+        "city": "Austin,",
+        "state": "TX",
+        "zipCode": "78701",
+        "country": "US"
+      },
+      "Items": [
+        {
+          "productCode": "TV-55-4K",
+          "quantity": 20,
+          "unitPrice": 450,
+          "price": 9000,
+          "description": "55\" 4K UHD Smart TV"
+        },
+        {
+          "productCode": "TV-65-OLED",
+          "quantity": 10,
+          "unitPrice": 1200,
+          "price": 12000,
+          "description": "65\" OLED Smart TV"
+        },
+        {
+          "productCode": "SHIP",
+          "quantity": 1,
+          "unitPrice": 850,
+          "price": 850,
+          "description": "Freight Shipping"
+        }
+      ]
+    }
+  }
+}

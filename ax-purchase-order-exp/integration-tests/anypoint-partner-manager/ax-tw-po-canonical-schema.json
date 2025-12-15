@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PurchaseOrderCanonical",
+  "type": "object",
+  "required": ["id", "purchaseOrder"],
+
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the document"
+    },
+
+    "purchaseOrder": {
+      "type": "object",
+      "required": [
+        "purchaseOrderNumber",
+        "purchaseOrderDate",
+        "amounts",
+        "buyer",
+        "vendor",
+        "shipTo",
+        "items"
+      ],
+
+      "properties": {
+        "purchaseOrderNumber": {
+          "type": "string"
+        },
+
+        "purchaseOrderDate": {
+          "type": "string",
+          "format": "date",
+          "description": "ISO 8601 date (YYYY-MM-DD)"
+        },
+
+        "amounts": {
+          "type": "object",
+          "required": ["subtotal", "tax", "total", "amountDue", "currency"],
+          "properties": {
+            "subtotal": { "type": "number" },
+            "tax": { "type": "number" },
+            "total": { "type": "number" },
+            "amountDue": { "type": "number" },
+            "currency": { "type": "string" }
+          }
+        },
+
+        "buyer": {
+          "type": "object",
+          "required": ["name", "address"],
+          "properties": {
+            "name": { "type": "string" },
+            "address": {
+              "$ref": "#/$defs/address"
+            }
+          }
+        },
+
+        "vendor": {
+          "type": "object",
+          "required": ["name", "address"],
+          "properties": {
+            "name": { "type": "string" },
+            "address": {
+              "$ref": "#/$defs/address"
+            }
+          }
+        },
+
+        "shipTo": {
+          "type": "object",
+          "required": ["name", "address"],
+          "properties": {
+            "name": { "type": "string" },
+            "address": {
+              "$ref": "#/$defs/address"
+            }
+          }
+        },
+
+        "items": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["description", "quantity", "unitPrice", "lineAmount"],
+            "properties": {
+              "productCode": {
+                "type": ["string", "null"]
+              },
+              "description": { "type": "string" },
+              "quantity": { "type": "number" },
+              "unitPrice": { "type": "number" },
+              "lineAmount": { "type": "number" }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "$defs": {
+    "address": {
+      "type": "object",
+      "required": ["line1", "city", "state", "postalCode", "country"],
+      "properties": {
+        "line1": { "type": "string" },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "postalCode": { "type": "string" },
+        "country": { "type": "string" }
+      }
+    }
+  }
+}
