@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.com/purchase-order.schema.json",
+  "title": "ax-tw-po-schema",
   "type": "object",
   "required": ["id", "documentName", "status", "pages"],
   "properties": {

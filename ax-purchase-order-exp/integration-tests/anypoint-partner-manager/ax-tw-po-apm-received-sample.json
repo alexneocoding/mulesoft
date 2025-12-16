@@ -1,10 +1,6 @@
 {
-  "senderId": {
-    "value": "TECHWAVE"
-  },
-  "receiverId": {
-    "value": "bigcompass"
-  },
+  "senderId": "TECHWAVE",
+  "receiverId": "bigcompass",
   "transaction": {
     "transactionType": "JSON-tw-po-schema",
     "payload": {
