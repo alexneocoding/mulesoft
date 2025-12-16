@@ -15,8 +15,12 @@ var parties = fields.parties
 ---
 
 {
-  senderId: page.fields.parties.buyer.name.value,
-  receiverId: page.fields.parties.vendor.name.value,
+  senderId: receiverId: {
+      "value": page.fields.parties.buyer.name.value,
+  },
+  receiverId: {
+      "value": page.fields.parties.vendor.name.value,
+  },
   referenceId: payload.id,
   transaction: {
     transactionType: "JSON-ax-tw-po-apm-received-schema",

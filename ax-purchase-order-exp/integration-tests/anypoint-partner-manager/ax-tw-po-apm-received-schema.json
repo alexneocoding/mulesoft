@@ -1,25 +1,30 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "ax-tw-po-apm-received-schema",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/json-ax-tw-po-apm-received-schema.json",
+  "title": "APM Received Purchase Order JSON",
   "type": "object",
-  "additionalProperties": true,
   "required": ["senderId", "receiverId", "referenceId", "transaction"],
   "properties": {
     "senderId": {
-      "type": "string",
-      "minLength": 1
+      "type": "object",
+      "properties": {
+        "value": { "type": "string" }
+      },
+      "additionalProperties": true
     },
     "receiverId": {
-      "type": "string",
-      "minLength": 1
+      "type": "object",
+      "properties": {
+        "value": { "type": "string" }
+      },
+      "additionalProperties": true
     },
     "referenceId": {
       "type": "string",
-      "minLength": 1
+      "description": "APM transmission or correlation reference"
     },
     "transaction": {
       "type": "object",
-      "additionalProperties": true,
       "required": ["transactionType", "payload"],
       "properties": {
         "transactionType": {
@@ -27,12 +32,9 @@
         },
         "payload": {
           "type": "object",
-          "additionalProperties": true,
           "required": [
             "DocumentName",
             "Status",
-            "Vendor",
-            "Buyer",
             "PurchaseOrderNumber",
             "PurchaseOrderDate",
             "Items"
@@ -45,112 +47,91 @@
               "type": "string"
             },
             "Vendor": {
-              "type": "object",
-              "additionalProperties": true,
-              "required": ["Name", "Address"],
-              "properties": {
-                "Name": {
-                  "type": "string"
-                },
-                "Address": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "properties": {
-                    "line1": { "type": "string" },
-                    "city": { "type": "string" },
-                    "state": { "type": "string" },
-                    "zipCode": { "type": "string" },
-                    "country": { "type": "string" }
-                  }
-                }
-              }
+              "$ref": "#/$defs/party"
             },
             "Buyer": {
               "type": "object",
-              "additionalProperties": true,
-              "required": ["Name", "Address"],
               "properties": {
-                "Name": {
-                  "type": "string"
-                },
-                "BuyerPhone": {
-                  "type": ["string", "null"]
-                },
-                "Address": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "properties": {
-                    "line1": { "type": "string" },
-                    "city": { "type": "string" },
-                    "state": { "type": "string" },
-                    "zipCode": { "type": "string" },
-                    "country": { "type": "string" }
-                  }
-                }
-              }
+                "Name": { "type": "string" },
+                "BuyerPhone": { "type": ["string", "null"] },
+                "Address": { "$ref": "#/$defs/address" }
+              },
+              "additionalProperties": true
             },
             "PurchaseOrderNumber": {
               "type": "string"
             },
             "PurchaseOrderDate": {
-              "type": "string",
-              "format": "date"
-            },
-            "Subtotal": {
-              "type": ["number", "integer"]
-            },
-            "Tax": {
-              "type": ["number", "integer"]
-            },
-            "Total": {
-              "type": ["number", "integer"]
-            },
-            "AmountDue": {
-              "type": ["number", "integer"]
-            },
-            "ShipToName": {
               "type": "string"
             },
+            "Subtotal": {
+              "type": ["number", "integer", "null"],
+              "minimum": 0
+            },
+            "Tax": {
+              "type": ["number", "integer", "null"],
+              "minimum": 0
+            },
+            "Total": {
+              "type": ["number", "integer", "null"],
+              "minimum": 0
+            },
+            "AmountDue": {
+              "type": ["number", "integer", "null"],
+              "minimum": 0
+            },
+            "ShipToName": {
+              "type": ["string", "null"]
+            },
             "ShipToAddress": {
-              "type": "object",
-              "additionalProperties": true,
-              "properties": {
-                "line1": { "type": "string" },
-                "city": { "type": "string" },
-                "state": { "type": "string" },
-                "zipCode": { "type": "string" },
-                "country": { "type": "string" }
-              }
+              "$ref": "#/$defs/address"
             },
             "Items": {
               "type": "array",
-              "minItems": 1,
               "items": {
-                "type": "object",
-                "additionalProperties": true,
-                "required": ["productCode", "quantity", "unitPrice", "price"],
-                "properties": {
-                  "productCode": {
-                    "type": "string"
-                  },
-                  "quantity": {
-                    "type": ["number", "integer"]
-                  },
-                  "unitPrice": {
-                    "type": ["number", "integer"]
-                  },
-                  "price": {
-                    "type": ["number", "integer"]
-                  },
-                  "description": {
-                    "type": "string"
-                  }
-                }
+                "$ref": "#/$defs/item"
               }
             }
-          }
+          },
+          "additionalProperties": true
         }
-      }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true,
+
+  "$defs": {
+    "address": {
+      "type": "object",
+      "properties": {
+        "line1": { "type": "string" },
+        "line2": { "type": ["string", "null"] },
+        "city": { "type": "string" },
+        "state": { "type": "string" },
+        "zipCode": { "type": "string" },
+        "country": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "party": {
+      "type": "object",
+      "properties": {
+        "Name": { "type": "string" },
+        "Address": { "$ref": "#/$defs/address" }
+      },
+      "additionalProperties": true
+    },
+    "item": {
+      "type": "object",
+      "properties": {
+        "productCode": { "type": "string" },
+        "quantity": { "type": ["number", "integer"] },
+        "unitPrice": { "type": ["number", "integer"] },
+        "price": { "type": ["number", "integer"] },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": true
     }
   }
 }
