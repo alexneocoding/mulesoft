@@ -3,7 +3,7 @@
   "receiverId": "bigcompass",
   "referenceId": "d992d190-584a-444f-bc8c-a19e782a5ce4",
   "transaction": {
-    "transactionType": "JSON-tw-po-schema",
+    "transactionType": "JSON-ax-tw-po-apm-received-schema",
     "payload": {
       "DocumentName": "purchase-order-00127.pdf",
       "Status": "SUCCEEDED",

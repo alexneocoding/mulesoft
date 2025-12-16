@@ -19,7 +19,7 @@ var parties = fields.parties
   receiverId: page.fields.parties.vendor.name.value,
   referenceId: payload.id,
   transaction: {
-    transactionType: "JSON-tw-po-schema",
+    transactionType: "JSON-ax-tw-po-apm-received-schema",
     payload: {
       DocumentName: payload.documentName,
       Status: payload.status,
