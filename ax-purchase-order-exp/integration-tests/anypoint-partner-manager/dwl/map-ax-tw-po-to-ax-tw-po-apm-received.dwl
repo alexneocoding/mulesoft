@@ -11,16 +11,11 @@ fun toMoney(value) =
 var page = payload.pages[0]
 var fields = page.fields
 var parties = fields.parties
-
 ---
 
 {
-  senderId: receiverId: {
-      "value": page.fields.parties.buyer.name.value,
-  },
-  receiverId: {
-      "value": page.fields.parties.vendor.name.value,
-  },
+  partnerReferenceId: page.fields.parties.buyer.name.value,
+  hostReferenceId: page.fields.parties.vendor.name.value,
   referenceId: payload.id,
   transaction: {
     transactionType: "JSON-ax-tw-po-apm-received-schema",

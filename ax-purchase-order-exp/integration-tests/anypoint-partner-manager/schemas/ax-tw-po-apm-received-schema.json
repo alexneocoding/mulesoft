@@ -3,20 +3,14 @@
   "$id": "https://example.com/schemas/json-ax-tw-po-apm-received-schema.json",
   "title": "APM Received Purchase Order JSON",
   "type": "object",
-  "required": ["senderId", "receiverId", "referenceId", "transaction"],
+  "required": ["partnerReferenceId", "hostReferenceId", "referenceId", "transaction"],
   "properties": {
-    "senderId": {
-      "type": "object",
-      "properties": {
-        "value": { "type": "string" }
-      },
-      "additionalProperties": true
+    "partnerReferenceId": {
+      "type": "string",
+       "additionalProperties": true
     },
-    "receiverId": {
-      "type": "object",
-      "properties": {
-        "value": { "type": "string" }
-      },
+    "hostReferenceId": {
+      "type": "string",
       "additionalProperties": true
     },
     "referenceId": {
