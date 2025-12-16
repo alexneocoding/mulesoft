@@ -1,10 +1,10 @@
 {
   "senderId": "TECHWAVE",
   "receiverId": "bigcompass",
+  "referenceId": "d992d190-584a-444f-bc8c-a19e782a5ce4",
   "transaction": {
     "transactionType": "JSON-tw-po-schema",
     "payload": {
-      "DocumentId": "d992d190-584a-444f-bc8c-a19e782a5ce4",
       "DocumentName": "purchase-order-00127.pdf",
       "Status": "SUCCEEDED",
       "Vendor": {

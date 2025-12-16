@@ -3,13 +3,17 @@
   "title": "ax-tw-po-apm-received-schema",
   "type": "object",
   "additionalProperties": true,
-  "required": ["senderId", "receiverId", "transaction"],
+  "required": ["senderId", "receiverId", "referenceId", "transaction"],
   "properties": {
     "senderId": {
       "type": "string",
       "minLength": 1
     },
     "receiverId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "referenceId": {
       "type": "string",
       "minLength": 1
     },
@@ -25,7 +29,6 @@
           "type": "object",
           "additionalProperties": true,
           "required": [
-            "DocumentId",
             "DocumentName",
             "Status",
             "Vendor",
@@ -35,9 +38,6 @@
             "Items"
           ],
           "properties": {
-            "DocumentId": {
-              "type": "string"
-            },
             "DocumentName": {
               "type": "string"
             },

@@ -13,7 +13,7 @@ fun mapAddress(addr) = {
 
 ---
 {
-  id: data.DocumentId,
+  id: payload.referenceId,
 
   purchaseOrder: {
     purchaseOrderNumber: data.PurchaseOrderNumber,

@@ -17,10 +17,10 @@ var parties = fields.parties
 {
   senderId: page.fields.parties.buyer.name.value,
   receiverId: page.fields.parties.vendor.name.value,
+  referenceId: payload.id,
   transaction: {
     transactionType: "JSON-tw-po-schema",
     payload: {
-      DocumentId: payload.id,
       DocumentName: payload.documentName,
       Status: payload.status,
       Vendor: {
