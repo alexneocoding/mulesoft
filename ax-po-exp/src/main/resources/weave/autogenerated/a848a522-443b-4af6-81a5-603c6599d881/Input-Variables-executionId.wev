@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_a848a522_443b_4af6_81a5_603c6599d881_Input_Variables_executionId = Any
+
