@@ -59,26 +59,14 @@ idp.poll.max.attempts=30
 file.upload.max.size=10485760
 ```
 
-## Testing
-- **Postman Collection:** `integration-tests/postman/purchase-order-api-tests.json`
-- **Sample PDF:** `integration-tests/purchase-orders/Invoice-PO-2025-012.pdf`
-
-## Deployment
-```bash
-# Package
-mvn clean package
-
-# Deploy to CloudHub 2.0
-anypoint-cli runtime-mgr cloudhub-application deploy \
-  --applicationName ax-purchase-order-exp \
-  --artifact target/ax-purchase-order-exp-1.0.0-SNAPSHOT-mule-application.jar
-```
-
 ## Architecture
 1. Input validation (PDF format, size limits)
 2. OAuth token acquisition
 3. IDP submission and polling
 4. Result extraction and response
+5. Transform response to BigCompass Anypoint Partner Manager
+6. Send to BigCompass Anypoint Partner Manager
+
 
 ## Error Handling
 Global error handler provides structured JSON responses with correlation IDs for all error scenarios.
