@@ -16,9 +16,9 @@ var parties = fields.parties
 {
   partnerReferenceId: page.fields.parties.buyer.name.value,
   hostReferenceId: page.fields.parties.vendor.name.value,
-  referenceId: payload.id,
+  businessDocumentKey: payload.id,
   transaction: {
-    transactionType: "JSON-ax-tw-po-apm-received-schema",
+    transactionType: "JSON-ax-techwave-po-apm-schema",
     payload: {
       DocumentName: payload.documentName,
       Status: payload.status,

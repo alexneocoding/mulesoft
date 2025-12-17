@@ -1,9 +1,9 @@
 {
   "partnerReferenceId": "TECHWAVE",
   "hostReferenceId": "bigcompass",
-  "referenceId": "d992d190-584a-444f-bc8c-a19e782a5ce4",
+  "businessDocumentKey": "d992d190-584a-444f-bc8c-a19e782a5ce4",
   "transaction": {
-    "transactionType": "JSON-ax-tw-po-apm-received-schema",
+    "transactionType": "JSON-ax-techwave-po-apm-schema",
     "payload": {
       "DocumentName": "purchase-order-00127.pdf",
       "Status": "SUCCEEDED",

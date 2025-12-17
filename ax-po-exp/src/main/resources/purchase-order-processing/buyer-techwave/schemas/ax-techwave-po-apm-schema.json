@@ -3,7 +3,7 @@
   "$id": "https://example.com/schemas/json-ax-tw-po-apm-received-schema.json",
   "title": "APM Received Purchase Order JSON",
   "type": "object",
-  "required": ["partnerReferenceId", "hostReferenceId", "referenceId", "transaction"],
+  "required": ["partnerReferenceId", "hostReferenceId", "businessDocumentKey", "transaction"],
   "properties": {
     "partnerReferenceId": {
       "type": "string",
@@ -13,7 +13,7 @@
       "type": "string",
       "additionalProperties": true
     },
-    "referenceId": {
+    "businessDocumentKey": {
       "type": "string",
       "description": "APM transmission or correlation reference"
     },
