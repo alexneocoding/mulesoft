@@ -6,14 +6,25 @@
 http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd">
 
     <!-- Main PO Fraud Detection Flow -->
-    <flow name="main-flow" doc:id="main-flow">
-        <http:listener doc:name="HTTP Listener" doc:id="http-listener" config-ref="HTTP_Listener_config" path="/api/fraud-detection/analyze" allowedMethods="POST" />
+    <flow name="main-purchase-orders" doc:id="90ba1b8e-2f48-4dfc-a770-61bbe0d086a6" >
+		<http:listener doc:name="POST /api/purchase-orders/" doc:id="9f8bb31f-a32a-4ee3-a6f5-1ecfd5d40814" config-ref="HTTP_Listener_config" path="/api/purchase-orders/"/>
+		<logger level="INFO" doc:name="START main-purchase-orders" doc:id="14aac68e-b419-451f-bbae-77c9c1a1b331" message="START main-purchase-orders"/>
+		<logger level="INFO" doc:name="END main-purchase-orders" doc:id="15b083fc-44e4-4654-8225-8c68f7ec7403" message="END main-purchase-orders"/>
+	</flow>
+	<flow name="main-purchase-orders-report" doc:id="e1df30ba-ff6b-430f-84ba-c882f9240b96">
+		<http:listener doc:name="GET /api/purchase-orders/report" doc:id="599389b5-8847-439c-9867-9e29019c13ce" config-ref="HTTP_Listener_config" path="/api/purchase-orders/report" />
+		<logger level="INFO" doc:name="START main-purchase-orders-report" doc:id="c030ddfe-481c-4d79-b2c8-5bd2d2f14fdb" message="START main-purchase-orders-report" />
+		<logger level="INFO" doc:name="END main-purchase-orders-report" doc:id="94bed85f-78a5-4a43-ae2c-195945b39ec6" message="END main-purchase-orders-report" />
+	</flow>
+	<flow name="main-purchase-orders-fraud-detection" doc:id="main-flow">
+        <http:listener doc:name="POST /api/purchase-orders/fraud-detection" doc:id="http-listener" config-ref="HTTP_Listener_config" path="/api/purchase-orders/fraud-detection" allowedMethods="POST" />
 
         <!-- Log incoming request -->
-        <logger level="INFO" doc:name="Log Request" doc:id="log-request" message="Received PO fraud detection request: #[payload]" />
+        <logger level="INFO" doc:name="START main-purchase-orders-fraud-detection" doc:id="log-request" message="START main-purchase-orders-fraud-detection" />
 
         <!-- Input validation -->
-        <flow-ref doc:name="Validate PO Data" doc:id="validate-po-data" name="validate-po-data-flow" />
+        <logger level="INFO" doc:name="LOG payload" doc:id="79ba296d-7062-4fcb-b7f7-14d842c59a0f" message="main-purchase-orders-fraud-detection: #[payload]" />
+		<flow-ref doc:name="Validate PO Data" doc:id="validate-po-data" name="validate-po-data-flow" />
 
         <!-- AI-powered fraud detection analysis -->
         <flow-ref doc:name="AI Fraud Analysis" doc:id="ai-fraud-analysis" name="ai-fraud-analysis-flow" />
@@ -44,51 +55,9 @@ output application/json
         </ee:transform>
 
         <!-- Log response -->
-        <logger level="INFO" doc:name="Log Response" doc:id="log-response" message="AI Fraud analysis completed - Risk Level: #[payload.fraudAssessment.riskLevel], Score: #[payload.fraudAssessment.riskScore], Confidence: #[payload.fraudAssessment.aiConfidence]" />
 
         <!-- Error handling -->
-        <error-handler>
-            <on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="on-error-propagate" type="VALIDATION:INVALID_BOOLEAN,VALIDATION:INVALID_EMAIL,VALIDATION:INVALID_IP,VALIDATION:INVALID_NUMBER,VALIDATION:INVALID_SIZE,VALIDATION:INVALID_TIME,VALIDATION:INVALID_URL,VALIDATION:NULL,VALIDATION:NOT_NULL,VALIDATION:EMPTY_COLLECTION,VALIDATION:NOT_EMPTY_COLLECTION">
-                <ee:transform doc:name="Validation Error Response" doc:id="validation-error-response">
-                    <ee:message>
-                        <ee:set-payload>
-                            <![CDATA[%dw 2.0
-output application/json
----
-{
-	"error": "VALIDATION_ERROR",
-	"message": "Invalid input data provided",
-	"details": "Validation failed",
-	"timestamp": now()
-}]]>
-                        </ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-            <on-error-propagate enableNotifications="true" logException="true" doc:name="General Error" doc:id="general-error">
-                <ee:transform doc:name="General Error Response" doc:id="general-error-response">
-                    <ee:message>
-                        <ee:set-payload>
-                            <![CDATA[%dw 2.0
-output application/json
----
-{
-	"error": "PROCESSING_ERROR",
-	"message": "An error occurred during fraud analysis",
-	"details": "Processing error",
-	"timestamp": now()
-}]]>
-                        </ee:set-payload>
-                    </ee:message>
-                    <ee:variables>
-                        <ee:set-variable variableName="httpStatus">500</ee:set-variable>
-                    </ee:variables>
-                </ee:transform>
-            </on-error-propagate>
-        </error-handler>
+		<logger level="INFO" doc:name="END main-purchase-orders-fraud-detection" doc:id="6d727bfe-542c-4f6c-979c-dc73e5913825" message="END main-purchase-orders-fraud-detection" />
     </flow>
 
 </mule>

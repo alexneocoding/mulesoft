@@ -10,6 +10,7 @@ http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/
 
 	<!-- PO Data Validation Flow -->
 	<flow name="validate-po-data-flow" doc:id="validate-po-data-flow">
+		<logger level="INFO" doc:name="START validate-po-data-flow" doc:id="0747c0e4-cf9e-41e5-9ba7-bf42c146b735" message="START validate-po-data-flow" />
 		<validation:is-not-null doc:name="Validate PO Number" doc:id="validate-po-number" value="#[payload.poNumber]" message="PO Number is required" />
 		<validation:is-not-null doc:name="Validate Vendor ID" doc:id="validate-vendor-id" value="#[payload.vendorId]" message="Vendor ID is required" />
 		<validation:is-not-null doc:name="Validate Amount" doc:id="validate-amount" value="#[payload.amount]" message="Amount is required" />
@@ -20,11 +21,13 @@ http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/
 		<validation:is-true doc:name="Validate Amount Format" doc:id="validate-amount-format" expression="#[payload.amount is Number and payload.amount > 0]" message="Amount must be a positive number" />
 
 		<logger level="INFO" doc:name="Validation Passed" doc:id="validation-passed" message="PO data validation completed successfully" />
+		<logger level="INFO" doc:name="END validate-po-data-flow" doc:id="c15bd025-50b6-48f8-a8ad-d8c07aaf8bf0" message="END validate-po-data-flow" />
 	</flow>
 
 	<!-- AI-Powered Fraud Analysis Flow -->
 	<flow name="ai-fraud-analysis-flow" doc:id="ai-fraud-analysis-flow">
 		<!-- Store original PO data -->
+		<logger level="INFO" doc:name="START ai-fraud-analysis-flow" doc:id="bec04b6a-3a48-45a1-a392-d7833c0d3b66" message="START ai-fraud-analysis-flow" />
 		<ee:transform doc:name="Store Original PO" doc:id="store-original-po">
 			<ee:message>
 				<ee:set-payload>
@@ -72,8 +75,7 @@ output application/java
 		</ee:transform>
 
 		<logger level="DEBUG" doc:name="Log Combined AI Analysis Results" doc:id="log-combined-results" message="=== COMBINED AI ANALYSIS RESULTS ===&#10;Original PO Data: #[write(payload.originalPO, 'application/json')]&#10;Final AI Analysis: #[write(payload.aiAnalysis, 'application/json')]&#10;Amount Analysis Results: #[write(vars.amountAnalysis, 'application/json')]&#10;Vendor Analysis Results: #[write(vars.vendorAnalysis, 'application/json')]&#10;Timing Analysis Results: #[write(vars.timingAnalysis, 'application/json')]&#10;=== END COMBINED AI ANALYSIS RESULTS ===" />
-
-		<logger level="INFO" doc:name="AI Analysis Complete" doc:id="ai-analysis-complete" message="AI fraud analysis completed - Risk Level: #[payload.aiAnalysis.riskLevel]" />
+		<logger level="INFO" doc:name="END ai-fraud-analysis-flow" doc:id="3b655e26-e8b0-440f-9ee5-40d478100c04" message="END ai-fraud-analysis-flow" />
 	</flow>
 
 	<!-- Common Historical Data Loading Flow -->
@@ -81,6 +83,7 @@ output application/java
 	<!-- AI Amount Analysis Flow -->
 	<flow name="ai-amount-analysis-flow" doc:id="ai-amount-analysis-flow">
 		<!-- Load historical data using common flow -->
+		<logger level="INFO" doc:name="START ai-amount-analysis-flow" doc:id="4682bbf3-63b1-41f9-8db0-d65251664580" message="START ai-amount-analysis-flow" />
 		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-amount">
 			<ee:message>
 				<ee:set-payload>
@@ -166,11 +169,13 @@ payload]]>
 		<logger level="DEBUG" doc:name="Log Amount Analysis Parsed Results" doc:id="log-amount-parsed-results" message="=== AMOUNT ANALYSIS - PARSED RESULTS ===&#10;Risk Score: #[payload.riskScore]&#10;Indicators: #[payload.indicators joinBy ', ']&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END AMOUNT ANALYSIS PARSED RESULTS ===" />
 
 		<logger level="DEBUG" doc:name="Amount Analysis Complete" doc:id="amount-analysis-log" message="AI Amount analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+		<logger level="INFO" doc:name="END ai-amount-analysis-flow" doc:id="9013c175-21d1-4ddd-99be-0dfcee8268ef" message="END ai-amount-analysis-flow" />
 	</flow>
 
 	<!-- AI Vendor Analysis Flow -->
 	<flow name="ai-vendor-analysis-flow" doc:id="ai-vendor-analysis-flow">
 		<!-- Load historical data using common flow -->
+		<logger level="INFO" doc:name="START ai-vendor-analysis-flow" doc:id="4d261409-ff27-4adf-97fe-7303fe6a93ec" message="START ai-vendor-analysis-flow" />
 		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-vendor">
 			<ee:message>
 				<ee:set-payload>
@@ -248,11 +253,13 @@ payload]]>
 		<logger level="DEBUG" doc:name="Log Vendor Analysis Parsed Results" doc:id="log-vendor-parsed-results" message="=== VENDOR ANALYSIS - PARSED RESULTS ===&#10;Risk Score: #[payload.riskScore]&#10;Indicators: #[payload.indicators joinBy ', ']&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END VENDOR ANALYSIS PARSED RESULTS ===" />
 
 		<logger level="DEBUG" doc:name="Vendor Analysis Complete" doc:id="vendor-analysis-log" message="AI Vendor analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+		<logger level="INFO" doc:name="END ai-vendor-analysis-flow" doc:id="08fad2e4-28e1-41f0-9cfe-1e093bada7ba" message="END ai-vendor-analysis-flow" />
 	</flow>
 
 	<!-- AI Timing Analysis Flow -->
 	<flow name="ai-timing-analysis-flow" doc:id="ai-timing-analysis-flow">
 		<!-- Load historical data using common flow -->
+		<logger level="INFO" doc:name="START ai-timing-analysis-flow" doc:id="6cf29a83-0a03-460f-9519-fff3968e1dba" message="START ai-timing-analysis-flow" />
 		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-timing">
 			<ee:message>
 				<ee:set-payload>
@@ -330,10 +337,12 @@ payload]]>
 		<logger level="DEBUG" doc:name="Log Timing Analysis Parsed Results" doc:id="log-timing-parsed-results" message="=== TIMING ANALYSIS - PARSED RESULTS ===&#10;Risk Score: #[payload.riskScore]&#10;Indicators: #[payload.indicators joinBy ', ']&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END TIMING ANALYSIS PARSED RESULTS ===" />
 
 		<logger level="DEBUG" doc:name="Timing Analysis Complete" doc:id="timing-analysis-log" message="AI Timing analysis - Risk Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+		<logger level="INFO" doc:name="END ai-timing-analysis-flow" doc:id="a930c1e3-1cac-40ec-969b-eb00567da7e6" message="END ai-timing-analysis-flow" />
 	</flow>
 
 	<!-- AI Final Risk Assessment Flow -->
 	<flow name="ai-final-assessment-flow" doc:id="ai-final-assessment-flow">
+		<logger level="INFO" doc:name="START ai-final-assessment-flow" doc:id="655ab1c4-8774-439e-96fc-e449a4c5b812" message="START ai-final-assessment-flow" />
 		<ee:transform doc:name="Load and Prepare Final Assessment Prompt" doc:id="prepare-final-prompt">
 			<ee:message>
 				<ee:set-payload>
@@ -394,7 +403,8 @@ else
 
 		<logger level="DEBUG" doc:name="Log Final Assessment Parsed Results" doc:id="log-final-parsed-results" message="=== FINAL ASSESSMENT - PARSED RESULTS ===&#10;Risk Level: #[payload.riskLevel]&#10;Risk Score: #[payload.riskScore]&#10;Fraud Indicators: #[payload.fraudIndicators joinBy ', ']&#10;Recommendation: #[payload.recommendation]&#10;Reasoning: #[payload.reasoning]&#10;Confidence: #[payload.confidence]&#10;Full Payload: #[write(payload, 'application/json')]&#10;=== END FINAL ASSESSMENT PARSED RESULTS ===" />
 
-		<logger level="INFO" doc:name="Final Assessment Complete" doc:id="final-assessment-log" message="AI Final assessment - Risk Level: #[payload.riskLevel], Score: #[payload.riskScore], Confidence: #[payload.confidence]" />
+		<logger level="INFO" doc:name="Final Assessment Complete" doc:id="final-assessment-log" message="AI Final assessment: Recommendation: #[payload.recommendation], Risk Level: #[payload.riskLevel], Score: #[payload.riskScore]" />
+		<logger level="INFO" doc:name="END ai-final-assessment-flow" doc:id="db824e71-0c08-42c0-97cf-4bfac47f485e" message="END ai-final-assessment-flow" />
 	</flow>
 
 </mule>
