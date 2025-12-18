@@ -4,9 +4,6 @@
 			"path": "ax-po-exp"
 		},
 		{
-			"path": "ax-po-fraud-detection-proc"
-		},
-		{
 			"path": "ax-po-proc"
 		}
 	],
