@@ -5,7 +5,7 @@
 	<artifactId>po-fraud-detection-api</artifactId>
 	<version>1.0.0</version>
 	<packaging>mule-application</packaging>
-	<name>ax-po-fraud-detection-proc</name>
+	<name>ax-po-proc</name>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
