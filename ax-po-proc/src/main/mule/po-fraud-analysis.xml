@@ -11,16 +11,18 @@ http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/
 	<!-- PO Data Validation Flow -->
 	<flow name="validate-po-data-flow" doc:id="validate-po-data-flow">
 		<logger level="INFO" doc:name="START validate-po-data-flow" doc:id="0747c0e4-cf9e-41e5-9ba7-bf42c146b735" message="START validate-po-data-flow" />
-		<validation:is-not-null doc:name="Validate PO Number" doc:id="validate-po-number" value="#[payload.poNumber]" message="PO Number is required" />
-		<validation:is-not-null doc:name="Validate Vendor ID" doc:id="validate-vendor-id" value="#[payload.vendorId]" message="Vendor ID is required" />
-		<validation:is-not-null doc:name="Validate Amount" doc:id="validate-amount" value="#[payload.amount]" message="Amount is required" />
-		<validation:is-not-null doc:name="Validate Date" doc:id="validate-date" value="#[payload.poDate]" message="PO Date is required" />
-		<validation:is-not-null doc:name="Validate Description" doc:id="validate-description" value="#[payload.description]" message="Description is required" />
+
+		<!-- Validate canonical schema structure -->
+		<validation:is-not-null doc:name="Validate PO Object" doc:id="validate-po-object" value="#[payload.purchaseOrder]" message="purchaseOrder object is required" />
+		<validation:is-not-null doc:name="Validate PO Number" doc:id="validate-po-number" value="#[payload.purchaseOrder.purchaseOrderNumber]" message="Purchase Order Number is required" />
+		<validation:is-not-null doc:name="Validate Vendor Name" doc:id="validate-vendor-name" value="#[payload.purchaseOrder.vendor.name]" message="Vendor name is required" />
+		<validation:is-not-null doc:name="Validate Amount" doc:id="validate-amount" value="#[payload.purchaseOrder.amounts.total]" message="Total amount is required" />
+		<validation:is-not-null doc:name="Validate Date" doc:id="validate-date" value="#[payload.purchaseOrder.purchaseOrderDate]" message="Purchase Order Date is required" />
 
 		<!-- Validate amount is numeric and positive -->
-		<validation:is-true doc:name="Validate Amount Format" doc:id="validate-amount-format" expression="#[payload.amount is Number and payload.amount > 0]" message="Amount must be a positive number" />
+		<validation:is-true doc:name="Validate Amount Format" doc:id="validate-amount-format" expression="#[payload.purchaseOrder.amounts.total is Number and payload.purchaseOrder.amounts.total > 0]" message="Total amount must be a positive number" />
 
-		<logger level="INFO" doc:name="Validation Passed" doc:id="validation-passed" message="PO data validation completed successfully" />
+		<logger level="INFO" doc:name="Validation Passed" doc:id="validation-passed" message="Canonical PO data validation completed successfully" />
 		<logger level="INFO" doc:name="END validate-po-data-flow" doc:id="c15bd025-50b6-48f8-a8ad-d8c07aaf8bf0" message="END validate-po-data-flow" />
 	</flow>
 
@@ -91,7 +93,7 @@ output application/java
 output application/java
 ---
 {
-	vendorId: payload.vendorId
+	vendorId: payload.purchaseOrder.vendor.name
 }]]>
 				</ee:set-payload>
 			</ee:message>
@@ -114,8 +116,8 @@ payload]]>
 output application/java
 var vendorFilteredData = payload
 var promptTemplate = readUrl("classpath://prompts/amount-analysis-prompt.txt", "text/plain")
-var step1 = (promptTemplate replace "{{amount}}" with (vars.originalAmountPayload.amount as String)) as String
-var step2 = (step1 replace "{{description}}" with (vars.originalAmountPayload.description default "")) as String
+var step1 = (promptTemplate replace "{{amount}}" with (vars.originalAmountPayload.purchaseOrder.amounts.total as String)) as String
+var step2 = (step1 replace "{{description}}" with (vars.originalAmountPayload.purchaseOrder.items[0].description default "")) as String
 var step3 = (step2 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
 var processedPrompt = (step3 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
 ---
@@ -183,7 +185,7 @@ payload]]>
 output application/java
 ---
 {
-	vendorId: vars.originalPO.vendorId
+	vendorId: vars.originalPO.purchaseOrder.vendor.name
 }]]>
 				</ee:set-payload>
 			</ee:message>
@@ -197,9 +199,9 @@ output application/java
 					<![CDATA[%dw 2.0 output application/java
 var vendorFilteredData = payload
 var promptTemplate = readUrl("classpath://prompts/vendor-analysis-prompt.txt", "text/plain")
-var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
-var step2 = (step1 replace "{{description}}" with (vars.originalPO.description default "")) as String
-var step3 = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.purchaseOrder.vendor.name default "")) as String
+var step2 = (step1 replace "{{description}}" with (vars.originalPO.purchaseOrder.items[0].description default "")) as String
+var step3 = (step2 replace "{{amount}}" with (vars.originalPO.purchaseOrder.amounts.total as String default "0")) as String
 var step4 = (step3 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
 var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
 ---
@@ -267,7 +269,7 @@ payload]]>
 output application/java
 ---
 {
-	vendorId: vars.originalPO.vendorId
+	vendorId: vars.originalPO.purchaseOrder.vendor.name
 }]]>
 				</ee:set-payload>
 			</ee:message>
@@ -281,10 +283,10 @@ output application/java
 					<![CDATA[%dw 2.0 output application/java
 var vendorFilteredData = payload
 var promptTemplate = readUrl("classpath://prompts/timing-analysis-prompt.txt", "text/plain")
-var step1 = (promptTemplate replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
+var step1 = (promptTemplate replace "{{poDate}}" with (vars.originalPO.purchaseOrder.purchaseOrderDate default "")) as String
 var step2 = (step1 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
-var step3 = (step2 replace "{{description}}" with (vars.originalPO.description default "")) as String
-var step4 = (step3 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
+var step3 = (step2 replace "{{description}}" with (vars.originalPO.purchaseOrder.items[0].description default "")) as String
+var step4 = (step3 replace "{{amount}}" with (vars.originalPO.purchaseOrder.amounts.total as String default "0")) as String
 var processedPrompt = (step4 replace "{{historicalData}}" with (write(vendorFilteredData, "application/json") default "[]")) as String
 ---
 {
@@ -348,11 +350,11 @@ payload]]>
 				<ee:set-payload>
 					<![CDATA[%dw 2.0 output application/java
 var promptTemplate = readUrl("classpath://prompts/final-assessment-prompt.txt", "text/plain")
-var step1 = (promptTemplate replace "{{poNumber}}" with (vars.originalPO.poNumber default "")) as String
-var step2 = (step1 replace "{{vendorId}}" with (vars.originalPO.vendorId default "")) as String
-var step3 = (step2 replace "{{amount}}" with (vars.originalPO.amount as String default "0")) as String
-var step4 = (step3 replace "{{poDate}}" with (vars.originalPO.poDate default "")) as String
-var step5 = (step4 replace "{{description}}" with (vars.originalPO.description default "")) as String
+var step1 = (promptTemplate replace "{{poNumber}}" with (vars.originalPO.purchaseOrder.purchaseOrderNumber default "")) as String
+var step2 = (step1 replace "{{vendorId}}" with (vars.originalPO.purchaseOrder.vendor.name default "")) as String
+var step3 = (step2 replace "{{amount}}" with (vars.originalPO.purchaseOrder.amounts.total as String default "0")) as String
+var step4 = (step3 replace "{{poDate}}" with (vars.originalPO.purchaseOrder.purchaseOrderDate default "")) as String
+var step5 = (step4 replace "{{description}}" with (vars.originalPO.purchaseOrder.items[0].description default "")) as String
 var step6 = (step5 replace "{{currentDate}}" with (now() as String)) as String
 var step7 = (step6 replace "{{amountAnalysisResults}}" with (vars.amountAnalysis.response default "")) as String
 var step8 = (step7 replace "{{vendorAnalysisResults}}" with (vars.vendorAnalysis.response default "")) as String

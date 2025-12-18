@@ -1,5 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="process-purchase-orders" doc:id="1f5a7436-c2f8-4a81-8faf-04d85dca6249" >
+		<flow-ref doc:name="Validate PO Data" doc:id="validate-canonical-po" name="validate-po-data-flow" />
+		<logger level="INFO" doc:name="Log Received Payload" doc:id="log-received-payload" message="Received canonical PO: #[write(payload, 'application/json')]" />
+		<os:store doc:name="Store PO with AWAITING_ANALYSIS" doc:id="store-po-awaiting" key="#[payload.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders">
+			<os:value><![CDATA[#[{
+				poData: payload,
+				status: "AWAITING_ANALYSIS",
+				timestamp: now(),
+				lastUpdated: now()
+			}]]]>
+			</os:value>
+		</os:store>
+		<flow-ref doc:name="AI Fraud Analysis" doc:id="call-fraud-analysis" name="ai-fraud-analysis-flow" />
+		<ee:transform doc:name="Store Fraud Analysis Result" doc:id="store-fraud-result">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="fraudAnalysisResult">
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<os:retrieve doc:name="Retrieve PO Record" doc:id="retrieve-po-record" key="#[vars.fraudAnalysisResult.originalPO.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders" />
+		<ee:transform doc:name="Update PO with Final Status" doc:id="update-po-status">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/java
+---
+payload ++ {
+	status: vars.fraudAnalysisResult.aiAnalysis.recommendation,
+	fraudAssessment: vars.fraudAnalysisResult.aiAnalysis,
+	lastUpdated: now()
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<os:store doc:name="Update PO Status" doc:id="update-po-status-store" key="#[vars.fraudAnalysisResult.originalPO.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders">
+		</os:store>
+		<ee:transform doc:name="Format Response" doc:id="format-final-response">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/json
+---
+{
+	"transactionId": uuid(),
+	"timeStamp": now(),
+	"poNumber": vars.fraudAnalysisResult.originalPO.purchaseOrder.purchaseOrderNumber,
+	"status": vars.fraudAnalysisResult.aiAnalysis.recommendation,
+	"fraudAssessment": vars.fraudAnalysisResult.aiAnalysis,
+	"message": "Purchase order processed and stored successfully"
+}]]>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

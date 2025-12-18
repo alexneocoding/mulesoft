@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ms-inference="http://www.mulesoft.org/schema/mule/ms-inference" xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ms-inference="http://www.mulesoft.org/schema/mule/ms-inference" xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
   http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
   http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
   http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
 http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd
-http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/mule/ms-inference/current/mule-ms-inference.xsd">
+http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/mule/ms-inference/current/mule-ms-inference.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 
 	<!-- Configuration Properties -->
 	<configuration-properties file="config.properties" doc:name="Configuration properties" doc:id="configuration-properties" />
@@ -14,17 +15,25 @@ http://www.mulesoft.org/schema/mule/ms-inference http://www.mulesoft.org/schema/
 		<http:listener-connection host="${http.host}" port="${http.port}" />
 	</http:listener-config>
 
-	<!-- Global Error Handler -->
-	<ms-inference:text-generation-config name="MuleSoft_Inference_Text_generation_config" doc:name="MuleSoft Inference Text generation config" doc:id="c08f59bd-a467-4f75-9632-5e2b4fca7eca" >
-		<ms-inference:openai-connection apiKey="#[p('llm.openai.api.key')]" temperature="0" topP="1"/>
+	<!-- AI Inference Configuration -->
+	<ms-inference:text-generation-config name="MuleSoft_Inference_Text_generation_config" doc:name="MuleSoft Inference Text generation config" doc:id="c08f59bd-a467-4f75-9632-5e2b4fca7eca">
+		<ms-inference:openai-connection apiKey="#[p('llm.openai.api.key')]" temperature="0" topP="1" />
 	</ms-inference:text-generation-config>
+
+	<!-- Global Configuration for Validation -->
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="validation-config" />
+
+	<!-- Global Error Handler -->
+	<os:object-store name="Object_Store_PurchaseOrders" doc:name="Object store" doc:id="93bb1463-5a51-47d5-99cb-2d1ee84c9485" config-ref="Object_Store_Config_PurchaseOrders"/>
+	<os:config name="Object_Store_Config_PurchaseOrders" doc:name="ObjectStore Config" doc:id="df67dbd4-b00d-40cb-97b3-1343e04fd385" >
+		<os:connection >
+			<reconnection />
+		</os:connection>
+	</os:config>
 	<error-handler name="global-error-handler" doc:id="global-error-handler">
 		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="global-on-error-continue">
 			<logger level="ERROR" doc:name="Global Error Logger" doc:id="global-error-logger" message="Global error occurred" />
 		</on-error-continue>
 	</error-handler>
-
-	<!-- Global Configuration for Validation -->
-	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="validation-config" />
 
 </mule>

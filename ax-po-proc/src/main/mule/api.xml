@@ -1,15 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:ms-aichain="http://www.mulesoft.org/schema/mule/ms-aichain" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:aichain="http://www.mulesoft.org/schema/mule/aichain" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
   http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
   http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
   http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
-http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd">
+http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mule/ms-aichain/current/mule-ms-aichain.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 
-    <!-- Main PO Fraud Detection Flow -->
-    <flow name="main-purchase-orders" doc:id="90ba1b8e-2f48-4dfc-a770-61bbe0d086a6" >
-		<http:listener doc:name="POST /api/purchase-orders/" doc:id="9f8bb31f-a32a-4ee3-a6f5-1ecfd5d40814" config-ref="HTTP_Listener_config" path="/api/purchase-orders/"/>
-		<logger level="INFO" doc:name="START main-purchase-orders" doc:id="14aac68e-b419-451f-bbae-77c9c1a1b331" message="START main-purchase-orders"/>
-		<logger level="INFO" doc:name="END main-purchase-orders" doc:id="15b083fc-44e4-4654-8225-8c68f7ec7403" message="END main-purchase-orders"/>
+	<!-- Main PO Fraud Detection Flow -->
+	<flow name="main-purchase-orders" doc:id="90ba1b8e-2f48-4dfc-a770-61bbe0d086a6">
+		<http:listener doc:name="POST /api/purchase-orders/" doc:id="9f8bb31f-a32a-4ee3-a6f5-1ecfd5d40814" config-ref="HTTP_Listener_config" path="/api/purchase-orders/" />
+		<logger level="INFO" doc:name="START main-purchase-orders" doc:id="14aac68e-b419-451f-bbae-77c9c1a1b331" message="START main-purchase-orders" />
+
+		<!-- Validate canonical schema -->
+
+		<!-- Log incoming payload -->
+
+		<!-- Store in Object Store with initial status -->
+
+		<!-- Call fraud detection -->
+
+		<!-- Store fraud analysis result in variable -->
+
+		<!-- Update Object Store with recommendation status -->
+
+		<!-- Return response -->
+
+		<flow-ref doc:name="FR: process-purchase-orders" doc:id="76ede7d0-b556-4d41-95af-ae61b5b2c456" name="process-purchase-orders" />
+		<logger level="INFO" doc:name="END main-purchase-orders" doc:id="15b083fc-44e4-4654-8225-8c68f7ec7403" message="END main-purchase-orders" />
 	</flow>
 	<flow name="main-purchase-orders-report" doc:id="e1df30ba-ff6b-430f-84ba-c882f9240b96">
 		<http:listener doc:name="GET /api/purchase-orders/report" doc:id="599389b5-8847-439c-9867-9e29019c13ce" config-ref="HTTP_Listener_config" path="/api/purchase-orders/report" />
@@ -17,23 +34,23 @@ http://www.mulesoft.org/schema/mule/ms-aichain http://www.mulesoft.org/schema/mu
 		<logger level="INFO" doc:name="END main-purchase-orders-report" doc:id="94bed85f-78a5-4a43-ae2c-195945b39ec6" message="END main-purchase-orders-report" />
 	</flow>
 	<flow name="main-purchase-orders-fraud-detection" doc:id="main-flow">
-        <http:listener doc:name="POST /api/purchase-orders/fraud-detection" doc:id="http-listener" config-ref="HTTP_Listener_config" path="/api/purchase-orders/fraud-detection" allowedMethods="POST" />
+		<http:listener doc:name="POST /api/purchase-orders/fraud-detection" doc:id="http-listener" config-ref="HTTP_Listener_config" path="/api/purchase-orders/fraud-detection" allowedMethods="POST" />
 
-        <!-- Log incoming request -->
-        <logger level="INFO" doc:name="START main-purchase-orders-fraud-detection" doc:id="log-request" message="START main-purchase-orders-fraud-detection" />
+		<!-- Log incoming request -->
+		<logger level="INFO" doc:name="START main-purchase-orders-fraud-detection" doc:id="log-request" message="START main-purchase-orders-fraud-detection" />
 
-        <!-- Input validation -->
-        <logger level="INFO" doc:name="LOG payload" doc:id="79ba296d-7062-4fcb-b7f7-14d842c59a0f" message="main-purchase-orders-fraud-detection: #[payload]" />
+		<!-- Input validation -->
+		<logger level="INFO" doc:name="LOG payload" doc:id="79ba296d-7062-4fcb-b7f7-14d842c59a0f" message="main-purchase-orders-fraud-detection: #[payload]" />
 		<flow-ref doc:name="Validate PO Data" doc:id="validate-po-data" name="validate-po-data-flow" />
 
-        <!-- AI-powered fraud detection analysis -->
-        <flow-ref doc:name="AI Fraud Analysis" doc:id="ai-fraud-analysis" name="ai-fraud-analysis-flow" />
+		<!-- AI-powered fraud detection analysis -->
+		<flow-ref doc:name="AI Fraud Analysis" doc:id="ai-fraud-analysis" name="ai-fraud-analysis-flow" />
 
-        <!-- Format final response -->
-        <ee:transform doc:name="Format Response" doc:id="format-response">
-            <ee:message>
-                <ee:set-payload>
-                    <![CDATA[%dw 2.0
+		<!-- Format final response -->
+		<ee:transform doc:name="Format Response" doc:id="format-response">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -50,14 +67,14 @@ output application/json
 	},
 	"status": "ANALYZED"
 }]]>
-                </ee:set-payload>
-            </ee:message>
-        </ee:transform>
+				</ee:set-payload>
+			</ee:message>
+		</ee:transform>
 
-        <!-- Log response -->
+		<!-- Log response -->
 
-        <!-- Error handling -->
+		<!-- Error handling -->
 		<logger level="INFO" doc:name="END main-purchase-orders-fraud-detection" doc:id="6d727bfe-542c-4f6c-979c-dc73e5913825" message="END main-purchase-orders-fraud-detection" />
-    </flow>
+	</flow>
 
 </mule>
