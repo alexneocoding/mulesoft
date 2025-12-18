@@ -1,0 +1,31 @@
+// --- Safe getter with default
+function getNumber(name, defaultValue) {
+    const value = pm.collectionVariables.get(name);
+    return value !== undefined && value !== null
+        ? Number(value)
+        : defaultValue;
+}
+
+// --- Get current values (or initialize)
+let isa = getNumber("isaControl", 1);
+let gs  = getNumber("gsControl", 1);
+let st  = getNumber("stControl", 1);
+let po  = getNumber("poNumberCounter", 1);
+
+// --- Increment
+isa++;
+gs++;
+st++;
+po++;
+
+// --- Persist raw counters (IMPORTANT: keep numeric)
+pm.collectionVariables.set("isaControl", isa);
+pm.collectionVariables.set("gsControl", gs);
+pm.collectionVariables.set("stControl", st);
+pm.collectionVariables.set("poNumberCounter", po);
+
+// --- Expose formatted variables for request usage
+pm.variables.set("ISA13", isa.toString().padStart(9, "0"));
+pm.variables.set("GS06", gs.toString());
+pm.variables.set("ST02", st.toString().padStart(4, "0"));
+pm.variables.set("PONUM", `PO-2025-${po.toString().padStart(5, "0")}`);

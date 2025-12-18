@@ -244,7 +244,7 @@ payload.status]]></ee:set-variable>
 		<logger level="DEBUG" doc:name="Send to APM Start" doc:id="f71f9c34-7587-4340-9fff-378e996092d0" message="Sending to APM - Execution ID: #[vars.executionId]" />
 		<ee:transform doc:name="Prepare Request to Anypoint Partner Manager" doc:id="b64f976d-3fc0-4b78-902a-9e1e65226392" >
 			<ee:message >
-				<ee:set-payload resource="purchase-order-processing/buyer-techwave/mapping/map-ax-techwave-po-to-ax-techwave-po-apm.dwl" />
+				<ee:set-payload resource="purchase-order-processing/partners/techwave/mapping/map-ax-techwave-po-to-ax-techwave-po-apm.dwl" />
 			</ee:message>
 		</ee:transform>
 		<http:request doc:name="Send Purchase Order to Anypoint Partner Manager" doc:id="cd0d4d9d-b563-4a95-945f-0b72929a134f" config-ref="APM_http_inbout_JSON" path="#[p('apm.execution.url')]" method="POST"/>

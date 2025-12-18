@@ -1,0 +1,52 @@
+{
+	"id": "754d1df4-d205-4db0-8a81-6f5f2aa74b88",
+	"name": "demo-po-purchase-order-brightview",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8081",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "apiPath",
+			"value": "/api/fraud-detection/analyze",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "isaControl",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "gsControl",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "stControl",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "poNumber",
+			"value": "",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"color": 120,
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2025-12-18T18:10:03.187Z",
+	"_postman_exported_using": "Postman/11.76.3"
+}
