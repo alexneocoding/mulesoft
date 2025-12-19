@@ -1,5 +1,6 @@
 {
     "name": "po-fraud-detection-api",
     "minMuleVersion": "4.9.0",
-    "javaSpecificationVersions": ["17"]
+    "javaSpecificationVersions": ["17"],
+    "secureProperties": ["llm.openai.api.key"]
 }
