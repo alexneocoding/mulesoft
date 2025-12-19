@@ -1,72 +1,111 @@
-# Purchase Order Experience API
+# AI-Enhanced Anypoint Partner Manager - Technology Demo
+
+A proof-of-concept demonstration showcasing the integration of MuleSoft Intelligent Document Processing (IDP) with Large Language Models for enhanced B2B document processing.
 
 ## Overview
-MuleSoft API that processes PDF purchase orders through Intelligent Document Processing (IDP) and returns extracted JSON data.
 
-## Quick Start
+This demo demonstrates how to enhance Anypoint Partner Manager with AI capabilities:
+- **Document Processing**: PDF extraction using MuleSoft IDP
+- **AI Analysis**: Fraud detection using GPT-4o-mini
+- **Real-time Monitoring**: Live dashboard for processing status
+- **Partner Integration**: Multi-format B2B document handling
+
+## Technology Stack
+
+- **MuleSoft Runtime**: 4.9.11
+- **AI Model**: GPT-4o-mini
+- **Document Processing**: MuleSoft IDP
+- **Integration**: Anypoint Partner Manager
+- **Frontend**: HTML5 Dashboard
+
+## Projects
+
+### ax-po-exp (Document Processing API)
+Processes PDF purchase orders through MuleSoft IDP and returns structured JSON data.
+
+**Key Features:**
+- PDF upload via multipart/form-data
+- MuleSoft IDP integration for data extraction
+- Partner-specific data transformations (TechWave, BrightView)
+- BigCompass canonical format output
+
+### ax-po-proc (AI Processing & Fraud Detection)
+AI-powered fraud detection using GPT-4o-mini with real-time dashboard monitoring.
+
+**Key Features:**
+- GPT-4o-mini fraud pattern detection
+- Risk scoring (0-100 scale)
+- Live dashboard at `/report` endpoint
+- Status tracking: APPROVE, REJECT, REVIEW, INVESTIGATION
+
+## Quick Setup
 
 ### Prerequisites
-- Java 8/11, Maven 3.6+
+- Java 8/11/17+, Maven 3.6+
 - MuleSoft IDP credentials
+- OpenAI API key
 
-### Setup
-1. Configure `src/main/resources/application.properties`:
-   ```properties
-   idp.client.id=your_client_id
-   idp.client.secret=your_client_secret
-   ```
-
-2. Run locally:
-   ```bash
-   mvn clean compile
-   mvn mule:run
-   ```
-
-3. Test endpoint:
-   ```bash
-   curl --location POST 'http://localhost:8081/api/v1/order' \
-   --header 'Accept: application/json' \
-   --form 'file=@"Invoice-PO-2025-012.pdf"'
-   ```
-
-## API Specification
-
-**Endpoint:** `POST /api/v1/order`
-- **Input:** PDF file via `multipart/form-data`
-- **Output:** JSON with extracted purchase order data
-
-**Response Codes:**
-- `200` - Success
-- `400` - Invalid input
-- `401` - Authentication failed
-- `502` - Service unavailable
-
-## Configuration
-
-Key properties in `application.properties`:
-```properties
-# HTTP Configuration
-http.listener.port=8081
-http.request.timeout=30000
-
-# IDP Configuration  
-idp.client.id=${IDP_CLIENT_ID}
-idp.client.secret=${IDP_CLIENT_SECRET}
-idp.poll.wait.seconds=5
-idp.poll.max.attempts=30
-
-# File Limits
-file.upload.max.size=10485760
+### Environment Variables
+```bash
+export IDP_CLIENT_ID="your_idp_client_id"
+export IDP_CLIENT_SECRET="your_idp_client_secret"
+export LLM_OPENAI_API_KEY="your_openai_api_key"
 ```
 
-## Architecture
-1. Input validation (PDF format, size limits)
-2. OAuth token acquisition
-3. IDP submission and polling
-4. Result extraction and response
-5. Transform response to BigCompass Anypoint Partner Manager
-6. Send to BigCompass Anypoint Partner Manager
+### Start Applications
+```bash
+# Document Processing API
+cd ax-po-exp && mvn clean compile && mvn mule:run
 
+# AI Processing API
+cd ax-po-proc && mvn clean compile && mvn mule:run
+```
 
-## Error Handling
-Global error handler provides structured JSON responses with correlation IDs for all error scenarios.
+## Demo Endpoints
+
+**Document Processing:**
+```bash
+curl -X POST 'http://localhost:8081/api/v1/order' \
+  -H 'Accept: application/json' \
+  -F 'file=@"purchase-order.pdf"'
+```
+
+**Fraud Detection:**
+```bash
+curl -X POST 'http://localhost:8081/api/fraud-detection/analyze' \
+  -H 'Content-Type: application/json' \
+  -d '{"poNumber":"PO-001","vendorId":"VENDOR-001","amount":5000,"poDate":"2023-12-01","description":"Office supplies"}'
+```
+
+**Live Dashboard:**
+- Open: `http://localhost:8081/report`
+- Auto-refreshes every 5 seconds
+- Shows real-time processing statistics and transaction details
+
+## Architecture Flow
+
+```
+PDF Upload → MuleSoft IDP → MuleSoft Partner Manager → Structured Data → Process API → GPT-4o-mini Analysis → Risk Assessment → Dashboard
+```
+
+## Demo Database
+
+This demo uses **MuleSoft Object Store** as the database layer to avoid unnecessary dependencies and complexities. The Object Store mimics database functionality for storing and retrieving purchase order data, processing status, and fraud analysis results.
+
+## Demo Scenarios
+
+1. **Standard Processing**: Upload `purchase-order-00137.pdf` → View extraction → Check low risk score
+2. **Fraud Detection**: Submit suspicious high-value transaction → Review AI analysis → Monitor dashboard alerts
+3. **Multi-Partner**: Process different format documents (PDF, EDI) → Compare transformations
+
+## Technologies Demonstrated
+
+- **MuleSoft IDP**: Automated document data extraction
+- **GPT-4o-mini**: AI-powered fraud pattern recognition
+- **Anypoint Partner Manager**: B2B integration and canonical data formats
+- **Real-time Dashboards**: Live monitoring and status tracking
+- **DataWeave**: Complex data transformations and mappings
+
+---
+
+**Note**: This is a proof-of-concept demonstration for showcasing AI-enhanced document processing capabilities in MuleSoft environments.

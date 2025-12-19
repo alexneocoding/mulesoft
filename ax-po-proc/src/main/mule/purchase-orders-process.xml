@@ -6,6 +6,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<sub-flow name="process-purchase-orders" doc:id="1f5a7436-c2f8-4a81-8faf-04d85dca6249">
 		<flow-ref doc:name="Validate PO Data" doc:id="validate-canonical-po" name="validate-po-data-flow" />
 		<logger level="INFO" doc:name="Log Received Payload" doc:id="log-received-payload" message="Received canonical PO: #[write(payload, 'application/json')]" />
+		<os:store doc:name="Store" doc:id="c5f077f2-b628-4bf2-b9c8-ec76e69643d9" key="__init__" objectStore="Object_Store_PurchaseOrders">
+			<os:value ><![CDATA["__init__"]]></os:value>
+		</os:store>
 		<os:store doc:name="Store PO with STARTING_ANALYSYS" doc:id="store-po-awaiting" key="#[payload.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders">
 			<os:value>
 				<![CDATA[#[{
