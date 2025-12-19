@@ -30,10 +30,6 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 			<reconnection />
 		</os:connection>
 	</os:config>
-	<error-handler name="global-error-handler" doc:id="global-error-handler">
-		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="global-on-error-continue">
-			<logger level="ERROR" doc:name="Global Error Logger" doc:id="global-error-logger" message="Global error occurred" />
-		</on-error-continue>
-	</error-handler>
+	<configuration doc:name="Configuration" doc:id="b7705247-3331-4c8d-812f-f80e56330c5b" defaultErrorHandler-ref="global-error-handler" />
 
 </mule>

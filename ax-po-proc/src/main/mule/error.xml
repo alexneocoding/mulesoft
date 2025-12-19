@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="global-error-handler" doc:id="490780c4-e19c-49aa-a99b-a754dee79206">
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Validation Error" doc:id="9084b763-0630-4e2e-a18c-2d6caec7f581" type="VALIDATION:INVALID_BOOLEAN,VALIDATION:INVALID_EMAIL,VALIDATION:INVALID_IP,VALIDATION:INVALID_NUMBER,VALIDATION:INVALID_SIZE,VALIDATION:INVALID_TIME,VALIDATION:INVALID_URL,VALIDATION:NULL,VALIDATION:NOT_NULL,VALIDATION:EMPTY_COLLECTION,VALIDATION:NOT_EMPTY_COLLECTION">
+			<logger level="ERROR" doc:name="Log Validation Error" doc:id="e73bfb72-f456-4925-99fc-b0ced348f888" message="Validation Error: #[error.description] - Correlation ID: #[correlationId]" />
+			<ee:transform doc:name="Validation Error Response" doc:id="4aba2435-6509-4a80-becb-aa351eba6eac">
+				<ee:message>
+					<ee:set-payload>
+						<![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: vars.error.description default "Validation error occurred",
+  errorType: "VALIDATION_ERROR",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]>
+					</ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">
+						<![CDATA[400]]>
+					</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Auth Error" doc:id="fe40940b-c032-4366-ae1e-1a34347ac138" type="HTTP:UNAUTHORIZED,HTTP:FORBIDDEN">
+			<logger level="ERROR" doc:name="Log Auth Error" doc:id="fc11de78-45fc-4904-b692-662579f5b99a" message="Authentication/Authorization Error: #[error.description] - Correlation ID: #[correlationId]" />
+			<ee:transform doc:name="Auth Error Response" doc:id="f39d4275-0543-44a1-86f5-c6183681b628">
+				<ee:message>
+					<ee:set-payload>
+						<![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: "Authentication failed with external service",
+  errorType: "AUTHENTICATION_ERROR",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]>
+					</ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">
+						<![CDATA[401]]>
+					</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Connectivity Error" doc:id="ac6978a3-39e6-4c81-8b41-af49bd450078" type="HTTP:CONNECTIVITY,HTTP:TIMEOUT">
+			<logger level="ERROR" doc:name="Log Connectivity Error" doc:id="0473f73a-02b2-49f7-9147-ab6b92827ec8" message="Connectivity/Timeout Error: #[error.description] - Correlation ID: #[correlationId]" />
+			<ee:transform doc:name="Connectivity Error Response" doc:id="5e39fbb3-2a13-4a7f-b0fa-21eece10fe24">
+				<ee:message>
+					<ee:set-payload>
+						<![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: "External service is currently unavailable",
+  errorType: "SERVICE_UNAVAILABLE",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]>
+					</ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">
+						<![CDATA[502]]>
+					</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="Generic Error" doc:id="d1afd191-5cbf-4248-baaf-5a2307ef4808">
+			<logger level="ERROR" doc:name="Log Generic Error" doc:id="779f6eb0-37e9-4b9d-8549-fa1537b47a4f" message="Internal Error: #[error.description] - Error Type: #[error.errorType] - Correlation ID: #[correlationId]" />
+			<ee:transform doc:name="Generic Error Response" doc:id="0134e051-0218-4c55-97ce-a78a5d29fc74">
+				<ee:message>
+					<ee:set-payload>
+						<![CDATA[%dw 2.0
+output application/json
+---
+{
+  error: "Internal processing error occurred",
+  errorType: "INTERNAL_ERROR",
+  timestamp: now(),
+  correlationId: vars.correlationId default ""
+}]]>
+					</ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="httpStatus">
+						<![CDATA[500]]>
+					</ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+		</on-error-continue>
+	</error-handler>
+</mule>

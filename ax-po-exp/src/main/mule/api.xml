@@ -14,7 +14,7 @@
 	<flow name="purchase-order-main-flow" doc:id="purchase-order-main-flow">
 		<http:listener doc:name="HTTP Listener" doc:id="http-listener" 
 			config-ref="HTTP_Listener_config" 
-			path="${http.listener.basePath}/order" 
+			path="${http.listener.basePath}/purchase-orders" 
 			allowedMethods="POST" />
 
 		<!-- Log incoming request -->
