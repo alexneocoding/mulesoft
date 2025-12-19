@@ -86,7 +86,7 @@
             color: #dc3545;
         }
 
-        .awaiting {
+        .starting {
             color: #ffc107;
         }
 
@@ -138,25 +138,29 @@
             letter-spacing: 0.5px;
         }
 
-        .status-approved {
+        .status-approve {
             background-color: #d4edda;
             color: #155724;
         }
 
-        .status-rejected {
+        .status-reject {
             background-color: #f8d7da;
             color: #721c24;
         }
 
-        .status-awaiting_analysis {
+        .status-startinganalysys {
             background-color: #fff3cd;
             color: #856404;
         }
 
-        .status-review,
-        .status-detailed_investigation {
+        .status-review {
             background-color: #d1ecf1;
             color: #0c5460;
+        }
+
+        .status-detailedinvestigation {
+            background-color: #ffeaa7;
+            color: #fd7e14;
         }
 
         .risk-score {
@@ -232,12 +236,16 @@
                 <div class="stat-label">Rejected</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number awaiting" id="awaitingCount">0</div>
-                <div class="stat-label">Awaiting Analysis</div>
+                <div class="stat-number starting" id="startingCount">0</div>
+                <div class="stat-label">Starting Analysis</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number review" id="otherCount">0</div>
-                <div class="stat-label">Under Review</div>
+                <div class="stat-number review" id="reviewCount">0</div>
+                <div class="stat-label">Review</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number investigation" id="investigationCount">0</div>
+                <div class="stat-label">Investigation</div>
             </div>
         </div>
 
@@ -290,29 +298,33 @@
 
         function updateStats(data) {
             const stats = {
-                APPROVED: 0,
-                REJECTED: 0,
-                AWAITING_ANALYSIS: 0,
-                OTHER: 0
+                APPROVE: 0,
+                REJECT: 0,
+                STARTING_ANALYSYS: 0,
+                REVIEW: 0,
+                DETAILED_INVESTIGATION: 0
             };
 
             data.forEach(function (po) {
                 var status = String(po.status || "unknown").toUpperCase();
-                if (status === "APPROVED") {
-                    stats.APPROVED++;
-                } else if (status === "REJECTED") {
-                    stats.REJECTED++;
-                } else if (status === "AWAITING_ANALYSIS") {
-                    stats.AWAITING_ANALYSIS++;
-                } else {
-                    stats.OTHER++;
+                if (status === "APPROVE") {
+                    stats.APPROVE++;
+                } else if (status === "REJECT") {
+                    stats.REJECT++;
+                } else if (status === "STARTING_ANALYSYS") {
+                    stats.STARTING_ANALYSYS++;
+                } else if (status === "REVIEW") {
+                    stats.REVIEW++;
+                } else if (status === "DETAILED_INVESTIGATION") {
+                    stats.DETAILED_INVESTIGATION++;
                 }
             });
 
-            document.getElementById("approvedCount").textContent = stats.APPROVED;
-            document.getElementById("rejectedCount").textContent = stats.REJECTED;
-            document.getElementById("awaitingCount").textContent = stats.AWAITING_ANALYSIS;
-            document.getElementById("otherCount").textContent = stats.OTHER;
+            document.getElementById("approvedCount").textContent = stats.APPROVE;
+            document.getElementById("rejectedCount").textContent = stats.REJECT;
+            document.getElementById("startingCount").textContent = stats.STARTING_ANALYSYS;
+            document.getElementById("reviewCount").textContent = stats.REVIEW;
+            document.getElementById("investigationCount").textContent = stats.DETAILED_INVESTIGATION;
         }
 
         function updateTable(data) {

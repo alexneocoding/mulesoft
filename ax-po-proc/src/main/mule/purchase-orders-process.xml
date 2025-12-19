@@ -1,17 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<sub-flow name="process-purchase-orders" doc:id="1f5a7436-c2f8-4a81-8faf-04d85dca6249" >
+	<sub-flow name="process-purchase-orders" doc:id="1f5a7436-c2f8-4a81-8faf-04d85dca6249">
 		<flow-ref doc:name="Validate PO Data" doc:id="validate-canonical-po" name="validate-po-data-flow" />
 		<logger level="INFO" doc:name="Log Received Payload" doc:id="log-received-payload" message="Received canonical PO: #[write(payload, 'application/json')]" />
-		<os:store doc:name="Store PO with AWAITING_ANALYSIS" doc:id="store-po-awaiting" key="#[payload.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders">
-			<os:value><![CDATA[#[{
+		<os:store doc:name="Store PO with STARTING_ANALYSYS" doc:id="store-po-awaiting" key="#[payload.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders">
+			<os:value>
+				<![CDATA[#[{
 				poData: payload,
-				status: "AWAITING_ANALYSIS",
+				status: "STARTING_ANALYSYS",
 				timestamp: now(),
 				lastUpdated: now()
 			}]]]>
@@ -51,8 +50,7 @@ payload ++ {
 				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<os:store doc:name="Update PO Status" doc:id="update-po-status-store" key="#[vars.fraudAnalysisResult.originalPO.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders">
-		</os:store>
+		<os:store doc:name="Update PO Status" doc:id="update-po-status-store" key="#[vars.fraudAnalysisResult.originalPO.purchaseOrder.purchaseOrderNumber]" objectStore="Object_Store_PurchaseOrders"></os:store>
 		<ee:transform doc:name="Format Response" doc:id="format-final-response">
 			<ee:message>
 				<ee:set-payload>
