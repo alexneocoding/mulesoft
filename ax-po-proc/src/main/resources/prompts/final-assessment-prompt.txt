@@ -6,7 +6,7 @@ You are a senior financial fraud detection expert. Based on the following indivi
 
 ORIGINAL PURCHASE ORDER:
 - PO Number: {{poNumber}}
-- Vendor ID: {{vendorId}}
+- Buyer ID: {{buyerId}}
 - Amount: {{amount}}
 - Date: {{poDate}}
 - Description: {{description}}

@@ -1,48 +1,41 @@
-Ignore all previous conversations, messages, or history. 
-Evaluate ONLY the information explicitly provided in THIS prompt. 
+Ignore all previous conversations, messages, or history.
+Evaluate ONLY the information explicitly provided in THIS prompt.
 Do not rely on any prior context.
 
-You are a financial fraud detection expert. Analyze the following Purchase Order vendor information for potential fraud indicators:
+You are a financial fraud detection expert.
 
-Vendor ID: {{vendorId}}
+Analyze the following buyer information for potential fraud indicators:
+
+Buyer ID: {{buyerId}}
 PO Description: {{description}}
 PO Amount: ${{amount}}
 Current Date: {{currentDate}}
 
-VENDOR HISTORICAL DATA (for comparison):
+BUYER HISTORICAL DATA (for comparison):
 {{historicalData}}
 
-Historical POs are already proven and approved.
-Treat them as trusted baseline data.
-Do NOT analyze historical data for corrections or inconsistencies.
-Use them strictly as reference patterns to evaluate whether the incoming new PO looks legitimate or suspicious.
+IMPORTANT CONTEXT:
+- Historical buyer records are trusted and approved.
+- If the Buyer ID matches historical data exactly, this is a STRONG legitimacy signal.
+- Do NOT speculate about shell companies or collusion without concrete evidence.
 
-Please analyze for:
-1. Suspicious vendor ID patterns (too short, test vendors, etc.)
-2. Vendor ID format inconsistencies
-3. Potential shell company indicators
-4. Any other vendor-related fraud indicators
-5. If there are no VENDOR HISTORICAL DATA, this is a RED FLAG. Risk score should be 0.
+Analyze ONLY for:
+1. Buyer IDs that are malformed, clearly test data, or nonsensical
+2. Buyer IDs that deviate significantly from historical patterns
+3. Missing buyer historical data (this is the ONLY automatic red flag)
 
-Provide your analysis in JSON format with:
-- riskScore: number (0-100)
-- indicators: array of strings describing any suspicious patterns found
-- reasoning: detailed explanation of your analysis
-- confidence: your confidence level (0-100) in this assessment
+Explicitly DO NOT:
+- Penalize known buyers
+- Penalize repeated purchases
+- Penalize legitimate bulk orders
+- Infer fraud without structural anomalies
 
-Be thorough but concise in your analysis.
+If buyer matches historical data and no anomalies exist:
+- riskScore MUST be low
+- indicators MUST be empty
 
-Example output:
-{
-  "riskScore": 35,
-  "indicators": [
-    "Indicator details.",
-    "Indicator details."
-  ],
-  "reasoning": "all reasoning here",
-  "confidence": 75
-}
-
-Return this as a plain text
-
-
+Return plain-text JSON with:
+- riskScore
+- indicators
+- reasoning
+- confidence

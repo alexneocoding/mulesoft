@@ -86,14 +86,15 @@ output application/java
 	<flow name="ai-amount-analysis-flow" doc:id="ai-amount-analysis-flow">
 		<!-- Load historical data using common flow -->
 		<logger level="INFO" doc:name="START ai-amount-analysis-flow" doc:id="4682bbf3-63b1-41f9-8db0-d65251664580" message="START ai-amount-analysis-flow" />
-		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-amount">
+		<ee:transform doc:name="Prepare Buyer ID for Historical Data" doc:id="prepare-vendor-id-amount">
 			<ee:message>
 				<ee:set-payload>
 					<![CDATA[%dw 2.0
 output application/java
 ---
 {
-	vendorId: payload.purchaseOrder.vendor.name
+	buyerId: payload.purchaseOrder.buyer.name,
+	purchaseOrder: payload.purchaseOrder
 }]]>
 				</ee:set-payload>
 			</ee:message>
@@ -106,7 +107,6 @@ payload]]>
 				</ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-
 		<flow-ref doc:name="Load Historical Data" doc:id="load-historical-data-amount" name="load-historical-data-flow" />
 
 		<ee:transform doc:name="Prepare Amount Analysis Prompt" doc:id="prepare-amount-prompt">
@@ -185,12 +185,12 @@ payload]]>
 output application/java
 ---
 {
-	vendorId: vars.originalPO.purchaseOrder.vendor.name
+	buyerId: vars.originalPO.purchaseOrder.buyer.name,
+	purchaseOrder: vars.originalPO.purchaseOrder
 }]]>
 				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
-
 		<flow-ref doc:name="Load Historical Data" doc:id="load-historical-data-vendor" name="load-historical-data-flow" />
 
 		<ee:transform doc:name="Prepare Vendor Analysis Prompt" doc:id="prepare-vendor-prompt">
@@ -199,7 +199,7 @@ output application/java
 					<![CDATA[%dw 2.0 output application/java
 var vendorFilteredData = payload
 var promptTemplate = readUrl("classpath://prompts/vendor-analysis-prompt.txt", "text/plain")
-var step1 = (promptTemplate replace "{{vendorId}}" with (vars.originalPO.purchaseOrder.vendor.name default "")) as String
+var step1 = (promptTemplate replace "{{buyerId}}" with (vars.originalPO.purchaseOrder.buyer.name default "")) as String
 var step2 = (step1 replace "{{description}}" with (vars.originalPO.purchaseOrder.items[0].description default "")) as String
 var step3 = (step2 replace "{{amount}}" with (vars.originalPO.purchaseOrder.amounts.total as String default "0")) as String
 var step4 = (step3 replace "{{currentDate}}" with (now() as Date {format: "yyyy-MM-dd"})) as String
@@ -262,19 +262,19 @@ payload]]>
 	<flow name="ai-timing-analysis-flow" doc:id="ai-timing-analysis-flow">
 		<!-- Load historical data using common flow -->
 		<logger level="INFO" doc:name="START ai-timing-analysis-flow" doc:id="6cf29a83-0a03-460f-9519-fff3968e1dba" message="START ai-timing-analysis-flow" />
-		<ee:transform doc:name="Prepare Vendor ID for Historical Data" doc:id="prepare-vendor-id-timing">
+		<ee:transform doc:name="Prepare Buyer ID for Historical Data" doc:id="prepare-vendor-id-timing">
 			<ee:message>
 				<ee:set-payload>
 					<![CDATA[%dw 2.0
 output application/java
 ---
 {
-	vendorId: vars.originalPO.purchaseOrder.vendor.name
+	buyerId: vars.originalPO.purchaseOrder.buyer.name,
+	purchaseOrder: vars.originalPO.purchaseOrder
 }]]>
 				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
-
 		<flow-ref doc:name="Load Historical Data" doc:id="load-historical-data-timing" name="load-historical-data-flow" />
 
 		<ee:transform doc:name="Prepare Timing Analysis Prompt" doc:id="prepare-timing-prompt">
@@ -351,7 +351,7 @@ payload]]>
 					<![CDATA[%dw 2.0 output application/java
 var promptTemplate = readUrl("classpath://prompts/final-assessment-prompt.txt", "text/plain")
 var step1 = (promptTemplate replace "{{poNumber}}" with (vars.originalPO.purchaseOrder.purchaseOrderNumber default "")) as String
-var step2 = (step1 replace "{{vendorId}}" with (vars.originalPO.purchaseOrder.vendor.name default "")) as String
+var step2 = (step1 replace "{{buyerId}}" with (vars.originalPO.purchaseOrder.buyer.name default "")) as String
 var step3 = (step2 replace "{{amount}}" with (vars.originalPO.purchaseOrder.amounts.total as String default "0")) as String
 var step4 = (step3 replace "{{poDate}}" with (vars.originalPO.purchaseOrder.purchaseOrderDate default "")) as String
 var step5 = (step4 replace "{{description}}" with (vars.originalPO.purchaseOrder.items[0].description default "")) as String

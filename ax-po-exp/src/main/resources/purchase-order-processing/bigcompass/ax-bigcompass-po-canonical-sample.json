@@ -1,13 +1,13 @@
 {
   "id": "d992d190-584a-444f-bc8c-a19e782a5ce4",
   "purchaseOrder": {
-    "purchaseOrderNumber": "PO-2025-00127",
-    "purchaseOrderDate": "2025-12-15",
+    "purchaseOrderNumber": "PO-2025-00122",
+    "purchaseOrderDate": "2025-12-20",
     "amounts": {
-      "subtotal": 21580,
-      "tax": 1748,
-      "total": 23598,
-      "amountDue": 23598,
+      "subtotal": 16500,
+      "tax": 1337,
+      "total": 17837,
+      "amountDue": 17837,
       "currency": "USD"
     },
     "buyer": {
@@ -44,23 +44,16 @@
       {
         "productCode": "TV-55-4K",
         "description": "55\" 4K UHD Smart TV",
-        "quantity": 20,
+        "quantity": 15,
         "unitPrice": 450,
-        "lineAmount": 9000
+        "lineAmount": 6750
       },
       {
         "productCode": "TV-65-OLED",
         "description": "65\" OLED Smart TV",
-        "quantity": 10,
+        "quantity": 8,
         "unitPrice": 1200,
-        "lineAmount": 12000
-      },
-      {
-        "productCode": "SHIP",
-        "description": "Freight Shipping",
-        "quantity": 1,
-        "unitPrice": 850,
-        "lineAmount": 850
+        "lineAmount": 9600
       }
     ]
   }

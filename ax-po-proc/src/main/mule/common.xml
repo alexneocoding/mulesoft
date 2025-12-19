@@ -1,23 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<flow name="load-historical-data-flow" doc:id="d23e06bf-a82b-4afc-ba1d-ea1bec7a5cc3" >
-		<ee:transform doc:name="Load and Filter Historical Data" doc:id="44e3d421-e15d-411e-8391-cf3563638665" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+	<flow name="load-historical-data-flow" doc:id="d23e06bf-a82b-4afc-ba1d-ea1bec7a5cc3">
+		<logger level="DEBUG" doc:name="START: load-historical-data-flow" doc:id="4d606209-5b6a-4d53-b229-e326df93f705" message="START: load-historical-data-flow" />
+		<ee:transform doc:name="Load and Filter Historical Data" doc:id="44e3d421-e15d-411e-8391-cf3563638665">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
 output application/java
 ---
 do {
-	var historicalData = readUrl("classpath://data/partner-history-data.json", "application/json")
-	var vendorFilteredData = historicalData filter ($.vendorId == payload.vendorId)
+	// Determine buyer and select appropriate file - no fallback
+	var buyerName = payload.purchaseOrder.buyer.name
+	var historicalDataFile = if (buyerName == "TECHWAVE") 
+		"classpath://data/hist-data-techwave.json"
+	else if (buyerName == "BrightView Electronics LLC")
+		"classpath://data/histo-data-brightview.json"
+	else 
+		null  // No data loaded for other buyers
+
+	// Only load data if we have a valid file
+	var historicalData = if (historicalDataFile != null) 
+		readUrl(historicalDataFile, "application/json")
+	else 
+		[]  // Return empty array if no matching buyer
+
+	// Map the data structure (only if we have data)
+	var mappedData = if (historicalData != [])
+		historicalData map ((item, index) -> {
+			vendorId: item.purchaseOrder.vendor.name,
+			amount: item.purchaseOrder.amounts.total,
+			poDate: item.purchaseOrder.purchaseOrderDate,
+			description: (item.purchaseOrder.items[0].description default ""),
+			// Include richer data for updated consuming flows
+			fullPurchaseOrder: item.purchaseOrder,
+			buyer: item.purchaseOrder.buyer,
+			vendor: item.purchaseOrder.vendor,
+			items: item.purchaseOrder.items,
+			amounts: item.purchaseOrder.amounts
+		})
+	else 
+		[]
+
+	// Filter by buyer (updated behavior)
+	var buyerFilteredData = mappedData filter ($.buyer.name == payload.buyerId)
 	---
-	vendorFilteredData
-}]]></ee:set-payload>
+	buyerFilteredData
+}]]>
+				</ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<logger level="DEBUG" doc:name="Historical Data Loaded" doc:id="7d0f68b3-eadd-49df-9857-930194cbe323" message="Loaded #[sizeOf(payload)] historical records for vendor: #[payload[0].vendorId default 'N/A']" />
+		<logger level="INFO" doc:name="Historical Data Loaded" doc:id="7d0f68b3-eadd-49df-9857-930194cbe323" message="Loaded #[sizeOf(payload)] historical records for vendor: #[payload[0].vendorId default 'N/A'] and buyer: #[payload[0].buyer.name default 'Unknown']" />
+		<logger level="DEBUG" doc:name="END: load-historical-data-flow1" doc:id="708efbfa-a457-4231-8bea-3a984f26258a" message="END: load-historical-data-flow" />
 	</flow>
 </mule>

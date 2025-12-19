@@ -1,8 +1,10 @@
-Ignore all previous conversations, messages, or history. 
-Evaluate ONLY the information explicitly provided in THIS prompt. 
+Ignore all previous conversations, messages, or history.
+Evaluate ONLY the information explicitly provided in THIS prompt.
 Do not rely on any prior context.
 
-You are a financial fraud detection expert. Analyze the following Purchase Order amount for potential fraud indicators:
+You are a financial fraud detection expert.
+
+Analyze the following Purchase Order amount for potential fraud indicators.
 
 PO Amount: ${{amount}}
 PO Description: {{description}}
@@ -11,36 +13,30 @@ Current Date: {{currentDate}}
 VENDOR HISTORICAL DATA (for comparison):
 {{historicalData}}
 
-Historical POs are already proven and approved.
-Treat them as trusted baseline data.
-Do NOT analyze historical data for corrections or inconsistencies.
-Use them strictly as reference patterns to evaluate whether the incoming new PO looks legitimate or suspicious.
+IMPORTANT CONTEXT:
+- Historical POs are already proven and approved.
+- Treat historical amounts as a trusted baseline range.
+- If the incoming PO amount falls WITHIN the historical range or close to the historical average, it should be considered NORMAL.
+- Do NOT flag amounts simply because they are higher than the last single historical PO.
+- Do NOT infer fraud unless the deviation is clearly extreme or unexplained.
 
-Please analyze for:
-1. Unusually high amounts that might indicate fraud
-2. Amount inconsistencies with the description
-3. Any other amount-related fraud indicators.
-4. NOT NOT analyze for round numbers, slightly above or slightly below amount
+Analyze ONLY for:
+1. Clearly extreme amounts well outside historical patterns
+2. Amounts that fundamentally contradict the PO description
+3. Other amount-related indicators ONLY if strongly justified
+
+Explicitly DO NOT:
+- Penalize amounts within historical ranges
+- Penalize moderate variation
+- Penalize amounts near historical averages
+- Analyze round numbers or minor deviations
+
+If no strong fraud indicators exist, indicators MUST be an empty array and riskScore should be LOW.
 
 Provide your analysis with:
-- riskScore: number (0-100)
-- indicators: array of strings describing any suspicious patterns found
-- reasoning: detailed explanation of your analysis
-- confidence: your confidence level (0-100) in this assessment
+- riskScore: number (0–100)
+- indicators: array of strings
+- reasoning: clear explanation
+- confidence: number (0–100)
 
-Be thorough but concise in your analysis.
-
-Example output:
-{
-
-  "riskScore": 35,
-  "indicators": [
-    "Indicator details.",
-    "Indicator details."
-  ],
-  "reasoning": "all reasoning here",
-  "confidence": 75
-}
-
-Return this as a plain text
-
+Return as plain-text JSON.

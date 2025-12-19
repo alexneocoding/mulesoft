@@ -2,84 +2,51 @@ Ignore all previous conversations, messages, or history.
 Evaluate ONLY the information explicitly provided in THIS prompt.
 Do not rely on any prior context.
 
-You are a financial fraud detection expert. Analyze the following Purchase Order timing information for potential fraud indicators:
+You are a financial fraud detection expert.
+
+Analyze the following Purchase Order timing information for potential fraud indicators:
 
 Incoming PO Date: {{poDate}}
 Current Date: {{currentDate}}
 PO Description: {{description}}
 PO Amount: {{amount}}
 
-VENDOR HISTORICAL DATA (reference patterns only; do NOT use for time comparisons):
+VENDOR HISTORICAL DATA (reference patterns only):
 {{historicalData}}
 
-Historical POs are already proven and approved.
-Treat them as trusted baseline data.
-Do NOT analyze historical data for corrections or inconsistencies.
-Use them strictly as reference patterns to evaluate whether the incoming new PO looks legitimate or suspicious.
+Historical POs are approved and trusted.
+Use them only as general business context, not for date comparison.
 
 ------------------------------------------------------------
-TIMING CALCULATION RULES (MANDATORY, SCRIPTED LOGIC)
+MANDATORY DATE CALCULATION SCRIPT
 ------------------------------------------------------------
 
-You MUST calculate timing relationships using the following exact internal script:
-
-# INTERNAL DATE CALCULATION SCRIPT (must be followed)
-
-1. Parse Incoming PO Date (poDate) as a YYYY-MM-DD date object.
-2. Parse Current Date (currentDate) as a YYYY-MM-DD date object.
+1. Parse poDate and currentDate as YYYY-MM-DD.
+2. Compute:
+   - isSameDay = (poDate == currentDate)
+   - isFuture  = (poDate > currentDate)
+   - isPast    = (poDate < currentDate)
 3. Compute:
-     isSameDay = (poDate == currentDate)
-     isFuture  = (poDate > currentDate)
-     isPast    = (poDate < currentDate)
-4. Compute:
-     daysDifference = poDate - currentDate in whole days
-     (negative indicates poDate is in the past, positive indicates future)
-
-You MUST use these script results EXACTLY when evaluating:
-- future-dated POs
-- very old past-dated POs
-- unusual timing patterns
-- any timing-related anomalies
-- DO NOT evaluate same-day processing
-- DO NOT evaluate the frequency of high-value orders in a short time frame
-Do NOT estimate, assume, reinterpret, or infer timing outside this script.
+   - daysDifference = poDate - currentDate (whole days)
 
 ------------------------------------------------------------
-ANALYSIS REQUIREMENTS
+ANALYSIS RULES
 ------------------------------------------------------------
 
-Analyze for:
-1. Future-dated purchase orders (red flag)
-2. Very old purchase orders being processed
-3. Same-day processing patterns
-4. Timing inconsistencies with business processes
-5. Any other timing-related fraud indicators
+- Same-day purchase orders are NORMAL and should NOT be flagged.
+- Future-dated POs of 1 day are COMMON in real business workflows and should NOT be treated as high risk.
+- Only flag future dates if the date difference is clearly excessive or unjustified.
+- Past-dated POs are normal unless extremely old.
 
-Return results in plain-text JSON with the following fields:
-
-- riskScore: number (0-100)
-- indicators: array of strings describing suspicious patterns
-- reasoning: detailed explanation of your analysis
-- confidence: number (0-100)
-
-Example output:
-
-{
-  "riskScore": 35,
-  "indicators": [
-    "Indicator details.",
-    "Indicator details."
-  ],
-  "reasoning": "all reasoning here",
-  "confidence": 75
-}
+Do NOT:
+- Flag normal operational timing
+- Infer intent beyond the calculated date difference
+- Evaluate order frequency or velocity
 
 ------------------------------------------------------------
-DATE GROUNDING RULES (NON-NEGOTIABLE)
-------------------------------------------------------------
 
-- Compare ONLY the Incoming PO Date to the Current Date.
-- Historical POs are strictly reference patterns; do NOT use them for past/future determination.
-- If Incoming {{poDate}} = {{currentDate}} → same-day
-- If Incoming {{poDate}} < {{currentDate}} → past
-- If Incoming {{poDate}} > {{currentDate}} → future
+Return plain-text JSON with:
+- riskScore (0–100)
+- indicators
+- reasoning
+- confidence
