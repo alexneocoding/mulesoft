@@ -8,7 +8,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
         <logger level="INFO" doc:name="START retrieve-all-po-data-flow" doc:id="start-retrieve-all-po" message="START retrieve-all-po-data-flow" />
 
         <!-- Get all Object Store keys -->
-        <os:retrieve-all-keys doc:name="Get All PO Keys" doc:id="get-all-po-keys" />
+        <os:retrieve-all-keys doc:name="Get All PO Keys" doc:id="get-all-po-keys" objectStore="Object_Store_PurchaseOrders"/>
 
         <!-- Initialize collection variable -->
         <ee:transform doc:name="Initialize Collection" doc:id="initialize-collection">
@@ -26,7 +26,7 @@ output application/java
         <foreach doc:name="For Each PO Key" doc:id="foreach-po-key" collection="#[payload]">
             <try doc:name="Try Retrieve PO Data" doc:id="try-retrieve-po-data">
                 <!-- Retrieve individual PO data -->
-                <os:retrieve doc:name="Retrieve PO Data" doc:id="retrieve-po-data" key="#[payload]" />
+                <os:retrieve doc:name="Retrieve PO Data" doc:id="retrieve-po-data" key="#[payload]" objectStore="Object_Store_PurchaseOrders"/>
 
                 <!-- Add to collection if successful -->
                 <ee:transform doc:name="Add to Collection" doc:id="add-to-collection">
