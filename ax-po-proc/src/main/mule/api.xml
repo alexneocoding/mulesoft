@@ -29,9 +29,72 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<logger level="INFO" doc:name="END main-purchase-orders" doc:id="15b083fc-44e4-4654-8225-8c68f7ec7403" message="END main-purchase-orders" />
 	</flow>
 	<flow name="main-purchase-orders-report" doc:id="e1df30ba-ff6b-430f-84ba-c882f9240b96">
-		<http:listener doc:name="GET /api/purchase-orders/report" doc:id="599389b5-8847-439c-9867-9e29019c13ce" config-ref="HTTP_Listener_config" path="/api/purchase-orders/report" />
+		<http:listener doc:name="GET /api/purchase-orders/report" doc:id="599389b5-8847-439c-9867-9e29019c13ce" config-ref="HTTP_Listener_config" path="/api/purchase-orders/report" >
+			<http:response >
+				<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "text/html",
+}]]]></http:headers>
+			</http:response>
+		</http:listener>
 		<logger level="INFO" doc:name="START main-purchase-orders-report" doc:id="c030ddfe-481c-4d79-b2c8-5bd2d2f14fdb" message="START main-purchase-orders-report" />
+
+		<!-- Load HTML Dashboard from static file -->
+		<ee:transform doc:name="Load Static HTML Dashboard" doc:id="load-static-html">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output text/plain
+---
+readUrl("classpath://dashboard.html", "text/plain")]]>
+				</ee:set-payload>
+				<ee:set-attributes><![CDATA[#[{
+					statusCode: 200,
+					headers: {
+						'Content-Type': 'text/html; charset=utf-8',
+						'Cache-Control': 'no-cache'
+					}
+				}]]]>
+				</ee:set-attributes>
+			</ee:message>
+		</ee:transform>
+
 		<logger level="INFO" doc:name="END main-purchase-orders-report" doc:id="94bed85f-78a5-4a43-ae2c-195945b39ec6" message="END main-purchase-orders-report" />
+	</flow>
+
+	<flow name="main-purchase-orders-data" doc:id="main-purchase-orders-data-flow">
+		<http:listener doc:name="GET /api/purchase-orders/data" doc:id="purchase-orders-data-listener" config-ref="HTTP_Listener_config" path="/api/purchase-orders/data" />
+		<logger level="INFO" doc:name="START main-purchase-orders-data" doc:id="start-purchase-orders-data" message="START main-purchase-orders-data" />
+
+		<!-- Retrieve all Object Store data -->
+		<flow-ref doc:name="Get All PO Data" doc:id="get-all-po-data" name="retrieve-all-po-data-flow" />
+
+		<!-- Set CORS headers and JSON content type -->
+		<ee:transform doc:name="Set Response Headers" doc:id="set-response-headers">
+			<ee:message>
+				<ee:set-payload>
+					<![CDATA[%dw 2.0
+output application/json
+---
+payload]]>
+				</ee:set-payload>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="httpHeaders">
+					<![CDATA[%dw 2.0
+output application/java
+---
+{
+	"Access-Control-Allow-Origin": "*",
+	"Access-Control-Allow-Methods": "GET",
+	"Access-Control-Allow-Headers": "Content-Type",
+	"Content-Type": "application/json"
+}]]>
+				</ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+
+		<logger level="INFO" doc:name="END main-purchase-orders-data" doc:id="end-purchase-orders-data" message="END main-purchase-orders-data - Returned #[sizeOf(payload)] records" />
 	</flow>
 	<flow name="main-purchase-orders-fraud-detection" doc:id="main-flow">
 		<http:listener doc:name="POST /api/purchase-orders/fraud-detection" doc:id="http-listener" config-ref="HTTP_Listener_config" path="/api/purchase-orders/fraud-detection" allowedMethods="POST" />

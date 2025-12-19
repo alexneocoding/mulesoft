@@ -1,5 +1,124 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 
-<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd"></mule>
+    <!-- Retrieve All PO Data Flow -->
+    <flow name="retrieve-all-po-data-flow" doc:id="retrieve-all-po-data-flow">
+        <logger level="INFO" doc:name="START retrieve-all-po-data-flow" doc:id="start-retrieve-all-po" message="START retrieve-all-po-data-flow" />
+
+        <!-- Get all Object Store keys -->
+        <os:retrieve-all-keys doc:name="Get All PO Keys" doc:id="get-all-po-keys" />
+
+        <!-- Initialize collection variable -->
+        <ee:transform doc:name="Initialize Collection" doc:id="initialize-collection">
+            <ee:variables>
+                <ee:set-variable variableName="poDataCollection">
+                    <![CDATA[%dw 2.0
+output application/java
+---
+[]]]>
+                </ee:set-variable>
+            </ee:variables>
+        </ee:transform>
+
+        <!-- Iterate through each key and retrieve data -->
+        <foreach doc:name="For Each PO Key" doc:id="foreach-po-key" collection="#[payload]">
+            <try doc:name="Try Retrieve PO Data" doc:id="try-retrieve-po-data">
+                <!-- Retrieve individual PO data -->
+                <os:retrieve doc:name="Retrieve PO Data" doc:id="retrieve-po-data" key="#[payload]" />
+
+                <!-- Add to collection if successful -->
+                <ee:transform doc:name="Add to Collection" doc:id="add-to-collection">
+                    <ee:variables>
+                        <ee:set-variable variableName="poDataCollection">
+                            <![CDATA[%dw 2.0
+output application/java
+---
+vars.poDataCollection + [{
+    key: payload.key default payload,
+    data: payload
+}]]]>
+                        </ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+
+                <error-handler>
+                    <on-error-continue enableNotifications="true" logException="false" doc:name="On Error Continue" doc:id="on-error-continue-retrieve">
+                        <logger level="DEBUG" doc:name="Skip Missing Key" doc:id="skip-missing-key" message="Skipping key: #[payload] - not found in Object Store" />
+                    </on-error-continue>
+                </error-handler>
+            </try>
+        </foreach>
+
+        <!-- Set final payload to collected data -->
+        <ee:transform doc:name="Set Final Payload" doc:id="set-final-payload">
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/java
+---
+vars.poDataCollection]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Format data for dashboard -->
+        <ee:transform doc:name="Format Dashboard Data" doc:id="format-dashboard-data">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map {
+	partnerName: $.data.poData.purchaseOrder.buyer.name default "Unknown",
+	poNumber: $.data.poData.purchaseOrder.purchaseOrderNumber default "N/A",
+	poDate: $.data.poData.purchaseOrder.purchaseOrderDate default "",
+	amount: "\$" ++ (($.data.poData.purchaseOrder.amounts.total default [0])[0] as String),
+	status: $.data.status default "Unknown",
+	riskScore: $.data.fraudAssessment.riskScore default 0,
+	lastUpdated: $.data.lastUpdated default $.data.timestamp default now(),
+	currency: $.data.poData.purchaseOrder.amounts.currency default "USD"
+}]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <logger level="INFO" doc:name="END retrieve-all-po-data-flow" doc:id="end-retrieve-all-po" message="Retrieved #[sizeOf(payload)] purchase orders" />
+    </flow>
+
+    <!-- Generate HTML Dashboard Flow -->
+    <flow name="generate-html-dashboard-flow" doc:id="generate-html-dashboard-flow">
+        <logger level="INFO" doc:name="START generate-html-dashboard-flow" doc:id="start-generate-html" message="START generate-html-dashboard-flow" />
+
+        <!-- Read HTML Dashboard from File -->
+        <ee:transform doc:name="Read HTML Dashboard File" doc:id="generate-html-content">
+            <ee:message>
+                <ee:set-payload>
+                    <![CDATA[%dw 2.0
+output application/java
+---
+readUrl("classpath://dashboard.html")]]>
+                </ee:set-payload>
+            </ee:message>
+        </ee:transform>
+
+        <!-- Set content type header -->
+        <ee:transform doc:name="Set HTML Content Type" doc:id="set-html-content-type">
+            <ee:message>
+                <ee:set-attributes>
+                    <![CDATA[%dw 2.0
+output application/java
+---
+{
+	headers: {
+		"Content-Type": "text/html; charset=utf-8"
+	}
+}]]>
+                </ee:set-attributes>
+            </ee:message>
+        </ee:transform>
+
+        <logger level="INFO" doc:name="END generate-html-dashboard-flow" doc:id="end-generate-html" message="END generate-html-dashboard-flow" />
+    </flow>
+
+</mule>

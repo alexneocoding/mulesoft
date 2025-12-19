@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Order Dashboards</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .last-update {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.7;
+        }
+
+        .approved {
+            color: #28a745;
+        }
+
+        .rejected {
+            color: #dc3545;
+        }
+
+        .awaiting {
+            color: #ffc107;
+        }
+
+        .review {
+            color: #007bff;
+        }
+
+        .investigation {
+            color: #fd7e14;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8f9fa;
+            padding: 20px 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-approved {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .status-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-awaiting_analysis {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .status-review,
+        .status-detailed_investigation {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .risk-score {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .risk-low {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .risk-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .risk-high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+
+        .loading {
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+
+            th,
+            td {
+                padding: 10px 8px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Purchase Orders Dashboard</h1>
+            <div class="last-update">Last updated: <span id="lastUpdate">Loading...</span></div>
+        </div>
+
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number approved" id="approvedCount">0</div>
+                <div class="stat-label">Approved</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number rejected" id="rejectedCount">0</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number awaiting" id="awaitingCount">0</div>
+                <div class="stat-label">Awaiting Analysis</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number review" id="otherCount">0</div>
+                <div class="stat-label">Under Review</div>
+            </div>
+        </div>
+
+        <div class="table-container">
+            <table id="purchaseOrderTable">
+                <thead>
+                    <tr>
+                        <th>Partner Name</th>
+                        <th>PO Number</th>
+                        <th>PO Date</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Risk Score</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <h3>No purchase orders found</h3>
+                            <p>Purchase orders will appear here once they are processed.</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let isLoading = false;
+
+        function updateDashboard() {
+            if (isLoading) return;
+            isLoading = true;
+
+            fetch("/api/purchase-orders/data")
+                .then(response => response.json())
+                .then(data => {
+                    updateStats(data);
+                    updateTable(data);
+                    updateLastUpdated();
+                })
+                .catch(error => {
+                    console.error("Error fetching data:", error);
+                })
+                .finally(() => {
+                    isLoading = false;
+                });
+        }
+
+        function updateStats(data) {
+            const stats = {
+                APPROVED: 0,
+                REJECTED: 0,
+                AWAITING_ANALYSIS: 0,
+                OTHER: 0
+            };
+
+            data.forEach(function (po) {
+                var status = String(po.status || "unknown").toUpperCase();
+                if (status === "APPROVED") {
+                    stats.APPROVED++;
+                } else if (status === "REJECTED") {
+                    stats.REJECTED++;
+                } else if (status === "AWAITING_ANALYSIS") {
+                    stats.AWAITING_ANALYSIS++;
+                } else {
+                    stats.OTHER++;
+                }
+            });
+
+            document.getElementById("approvedCount").textContent = stats.APPROVED;
+            document.getElementById("rejectedCount").textContent = stats.REJECTED;
+            document.getElementById("awaitingCount").textContent = stats.AWAITING_ANALYSIS;
+            document.getElementById("otherCount").textContent = stats.OTHER;
+        }
+
+        function updateTable(data) {
+            const tbody = document.getElementById("tableBody");
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="empty-state">
+                            <h3>No purchase orders found</h3>
+                            <p>Purchase orders will appear here once they are processed.</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = data.map(function (po) {
+                return `
+                    <tr>
+                        <td><strong>` + (po.partnerName || "Unknown") + `</strong></td>
+                        <td>` + (po.poNumber || "N/A") + `</td>
+                        <td>` + formatDate(po.poDate) + `</td>
+                        <td><strong>` + (po.amount || "$0") + `</strong></td>
+                        <td><span class="status-badge status-` + String(po.status || "unknown").toLowerCase().replace(/_/g, "") + `">` + (po.status || "Unknown") + `</span></td>
+                        <td><span class="risk-score ` + getRiskClass(po.riskScore) + `">` + (po.riskScore || 0) + `</span></td>
+                        <td>` + formatTimestamp(po.lastUpdated) + `</td>
+                    </tr>
+                `;
+            }).join("");
+        }
+
+        function getRiskClass(score) {
+            if (score < 20) return "risk-low";
+            if (score < 50) return "risk-medium";
+            return "risk-high";
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return "N/A";
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleDateString("en-US", {
+                    year: "numeric",
+                    month: "short",
+                    day: "2-digit"
+                });
+            } catch (e) {
+                return dateStr;
+            }
+        }
+
+        function formatTimestamp(timestamp) {
+            if (!timestamp) return "N/A";
+            try {
+                const date = new Date(timestamp);
+                return date.toLocaleString("en-US", {
+                    month: "short",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit"
+                });
+            } catch (e) {
+                return timestamp;
+            }
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById("lastUpdate").textContent = now.toLocaleString();
+        }
+
+        // Initial load
+        updateDashboard();
+
+        // Auto-refresh every 5 seconds
+        setInterval(updateDashboard, 5000);
+    </script>
+</body>
+
+</html>

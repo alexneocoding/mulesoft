@@ -24,7 +24,7 @@ var parties = fields.parties
     transactionType: "JSON-ax-techwave-po-apm-schema",
     payload: {
       DocumentName: payload.documentName,
-      Status: payload.status,
+      Status: (payload.status default "") as String,
       Vendor: {
           Name: val(parties.vendor.name),
           Address: 
